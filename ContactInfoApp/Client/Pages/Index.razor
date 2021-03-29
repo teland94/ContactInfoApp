@@ -1,0 +1,67 @@
+﻿@page "/"
+@using ContactInfoApp.Shared
+@using Blazored.LocalStorage
+
+@inject HttpClient HttpClient
+@inject NotificationService NotificationService
+@inject ILocalStorageService LocalStorageService
+
+<p>
+    <RadzenTextBox Value="@_phoneNumber" Placeholder="Search..." Change="OnChange" />
+    <RadzenButton Click=@(args => _phoneNumber = null) Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
+    <RadzenButton Click="SearchClick" Text="Поиск"></RadzenButton>
+</p>
+
+@if (_contact != null)
+{
+<p>
+    User: @_contact.DisplayName
+</p>
+    @if (_contact.Tags != null)
+    {
+        <p>
+            Tag list:
+            <ul>
+                @foreach (var tag in _contact.Tags)
+                {
+                    <li>@tag</li>
+                }
+            </ul>
+        </p>
+    }
+    @if (_contact.TagCount != null)
+    {
+        <p>
+            Tag Count: @_contact.TagCount
+        </p>
+    }
+}
+
+@code {
+    string _phoneNumber;
+    Contact _contact;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _phoneNumber = await LocalStorageService.GetItemAsync<string>("phoneNumber");
+    }
+
+    void OnChange(string value)
+    {
+        _phoneNumber = value;
+    }
+
+    async Task SearchClick(MouseEventArgs e)
+    {
+        try
+        {
+            _contact = await HttpClient.GetFromJsonAsync<Contact>($"/api/Contact/?phoneNumber={_phoneNumber}");
+            Console.WriteLine(_contact);
+            await LocalStorageService.SetItemAsync("phoneNumber", _phoneNumber);
+        }
+        catch (HttpRequestException ex)
+        {
+            NotificationService.Notify(NotificationSeverity.Error, ex.Message, duration: 10000);
+        }
+    }
+}

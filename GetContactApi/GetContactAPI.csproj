@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Authors>SijyKijy</Authors>
+    <Product>GetContactAPI</Product>
+    <Description>Simple unofficial API for GetContact</Description>
+    <RepositoryUrl>https://github.com/SijyKijy/GetContactAPI</RepositoryUrl>
+    <PackageTags>GetContact</PackageTags>
+    <Copyright>MIT License</Copyright>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageLicenseFile>README.md</PackageLicenseFile>
+    <LangVersion>9.0</LangVersion>
+    <Version>1.0.2</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Models\Result.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="5.0.1" />
+  </ItemGroup>
+
+</Project>
