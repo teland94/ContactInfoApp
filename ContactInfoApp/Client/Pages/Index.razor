@@ -1,38 +1,42 @@
 ﻿@page "/"
 @using ContactInfoApp.Shared
 @using Blazored.LocalStorage
+@using System.Text.RegularExpressions
+@using CurrieTechnologies.Razor.Clipboard
 
 @inject HttpClient HttpClient
 @inject NotificationService NotificationService
 @inject ILocalStorageService LocalStorageService
+@inject ClipboardService ClipboardService
 
 <p>
-    <RadzenTextBox Value="@_phoneNumber" Placeholder="Search..." Change="OnChange" />
-    <RadzenButton Click=@(args => _phoneNumber = null) Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
+    <RadzenTextBox Value="@_phoneNumber" Placeholder="Введите номер телефона" Change="OnChange" @ref="_textBox" Style="min-width: 200px;" />
+    <RadzenButton Click=@(async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }) Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
+    <RadzenButton Click="PasteClick" Text="Вставить"></RadzenButton>
     <RadzenButton Click="SearchClick" Text="Поиск"></RadzenButton>
 </p>
 
 @if (_contact != null)
 {
-<p>
-    User: @_contact.DisplayName
-</p>
+    <p class="icon-item">
+        <RadzenIcon Icon="contact_page" />&nbsp;@_contact.DisplayName
+    </p>
     @if (_contact.Tags != null)
     {
         <p>
-            Tag list:
-            <ul>
-                @foreach (var tag in _contact.Tags)
-                {
-                    <li>@tag</li>
-                }
-            </ul>
+            <RadzenDataList WrapItems="true" Data="@_contact.Tags">
+                <Template Context="tag">
+                    <div class="icon-item">
+                        <RadzenIcon Icon="label" />&nbsp;@tag
+                    </div>
+                </Template>
+            </RadzenDataList>
         </p>
     }
     @if (_contact.TagCount != null)
     {
         <p>
-            Tag Count: @_contact.TagCount
+            Количество тегов: @_contact.TagCount
         </p>
     }
 }
@@ -40,24 +44,34 @@
 @code {
     string _phoneNumber;
     Contact _contact;
+    
+    RadzenTextBox _textBox;
 
     protected override async Task OnInitializedAsync()
     {
         _phoneNumber = await LocalStorageService.GetItemAsync<string>("phoneNumber");
     }
 
-    void OnChange(string value)
+    private void OnChange(string value)
     {
         _phoneNumber = value;
     }
 
-    async Task SearchClick(MouseEventArgs e)
+    private async Task PasteClick(MouseEventArgs e)
+    {
+        if (await ClipboardService.IsSupportedAsync())
+        {
+            _phoneNumber = await ClipboardService.ReadTextAsync();
+        }
+    }
+
+    private async Task SearchClick(MouseEventArgs e)
     {
         try
         {
-            _contact = await HttpClient.GetFromJsonAsync<Contact>($"/api/Contact/?phoneNumber={_phoneNumber}");
-            Console.WriteLine(_contact);
-            await LocalStorageService.SetItemAsync("phoneNumber", _phoneNumber);
+            var trimmedPhoneNumber = Regex.Replace(_phoneNumber, @"\s+", "");
+            _contact = await HttpClient.GetFromJsonAsync<Contact>($"/api/Contact/?phoneNumber={trimmedPhoneNumber}");
+            await LocalStorageService.SetItemAsync("phoneNumber", trimmedPhoneNumber);
         }
         catch (HttpRequestException ex)
         {
