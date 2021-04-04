@@ -34,5 +34,10 @@ namespace GetContactAPI
             if (string.IsNullOrEmpty(phone) || !_phoneRegex.IsMatch(phone)) throw new ArgumentException("Телефон заполнен неправильно");
             return _topic.CreateTopicAsync<DetailsResult>("https://pbssrv-centralevents.com/v2.5/number-detail", "details", phone, countryCode, cancellationToken);
         }
+
+        public async Task SendValidationCodeAsync(string validationCode, CancellationToken cancellationToken)
+        {
+            await _topic.CreateValidationTopicAsync("https://pbssrv-centralevents.com/v2.5/verify-code", validationCode, cancellationToken);
+        }
     }
 }

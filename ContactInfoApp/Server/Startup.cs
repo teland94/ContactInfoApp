@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 using ContactInfoApp.Server.Configuration;
+using GetContactAPI;
+using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 
 namespace ContactInfoApp.Server
 {
@@ -25,6 +27,16 @@ namespace ContactInfoApp.Server
         {
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddSwaggerGen();
+
+            services.AddScoped(s => new GetContact(new Data(
+                Configuration.GetValue<string>("GetContact:Token"),
+                Configuration.GetValue<string>("GetContact:AesKey")
+            )));
+            services.AddScoped<IComputerVisionClient>(s => new ComputerVisionClient(new ApiKeyServiceClientCredentials(
+                Configuration.GetValue<string>("ComputerVisionApi:Key")
+            )) { Endpoint = Configuration.GetValue<string>("ComputerVisionApi:Endpoint") });
 
             services.Configure<GetContactSettings>(Configuration.GetSection("GetContact"));
         }
@@ -47,6 +59,13 @@ namespace ContactInfoApp.Server
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ContactInfo API");
+            });
 
             app.UseRouting();
 

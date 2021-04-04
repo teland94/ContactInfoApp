@@ -1,16 +1,7 @@
 ﻿@page "/"
-@using ContactInfoApp.Shared
-@using Blazored.LocalStorage
-@using System.Text.RegularExpressions
-@using CurrieTechnologies.Razor.Clipboard
-
-@inject HttpClient HttpClient
-@inject NotificationService NotificationService
-@inject ILocalStorageService LocalStorageService
-@inject ClipboardService ClipboardService
 
 <p>
-    <RadzenTextBox Value="@_phoneNumber" Placeholder="Введите номер телефона" Change="OnChange" @ref="_textBox" Style="min-width: 200px;" />
+    <RadzenTextBox Value="@_phoneNumber" Placeholder="Введите номер телефона" Change="value => _phoneNumber = value" @ref="_textBox" Style="min-width: 200px;" />
     <RadzenButton Click=@(async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }) Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
     <RadzenButton Click="PasteClick" Text="Вставить"></RadzenButton>
     <RadzenButton Click="SearchClick" Text="Поиск"></RadzenButton>
@@ -38,44 +29,5 @@
         <p>
             Количество тегов: @_contact.TagCount
         </p>
-    }
-}
-
-@code {
-    string _phoneNumber;
-    Contact _contact;
-    
-    RadzenTextBox _textBox;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _phoneNumber = await LocalStorageService.GetItemAsync<string>("phoneNumber");
-    }
-
-    private void OnChange(string value)
-    {
-        _phoneNumber = value;
-    }
-
-    private async Task PasteClick(MouseEventArgs e)
-    {
-        if (await ClipboardService.IsSupportedAsync())
-        {
-            _phoneNumber = await ClipboardService.ReadTextAsync();
-        }
-    }
-
-    private async Task SearchClick(MouseEventArgs e)
-    {
-        try
-        {
-            var trimmedPhoneNumber = Regex.Replace(_phoneNumber, @"\s+", "");
-            _contact = await HttpClient.GetFromJsonAsync<Contact>($"/api/Contact/?phoneNumber={trimmedPhoneNumber}");
-            await LocalStorageService.SetItemAsync("phoneNumber", trimmedPhoneNumber);
-        }
-        catch (HttpRequestException ex)
-        {
-            NotificationService.Notify(NotificationSeverity.Error, ex.Message, duration: 10000);
-        }
     }
 }

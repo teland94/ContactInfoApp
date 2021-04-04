@@ -4,12 +4,10 @@ using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using ContactInfoApp.Server.Configuration;
 using ContactInfoApp.Shared;
 using GetContactAPI;
 using GetContactAPI.Exceptions;
 using GetContactAPI.Models;
-using Microsoft.Extensions.Options;
 
 namespace ContactInfoApp.Server.Controllers
 {
@@ -17,29 +15,25 @@ namespace ContactInfoApp.Server.Controllers
     [ApiController]
     public class ContactController : ControllerBase
     {
-        private GetContactSettings GetContactSettings { get; }
+        private GetContact Api { get; }
 
-        public ContactController(IOptions<GetContactSettings> getContactOptions)
+        public ContactController(GetContact getContact)
         {
-            GetContactSettings = getContactOptions.Value;
+            Api = getContact;
         }
 
+        [HttpGet]
         public async Task<ActionResult<Contact>> Get(string phoneNumber)
         {
             try
             {
-                var api = new GetContact(new Data(
-                    GetContactSettings.Token,
-                    GetContactSettings.AesKey
-                ));
-
-                var phoneInfo = await api.GetByPhoneAsync(phoneNumber, CancellationToken.None, "UA");
+                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, CancellationToken.None, "UA");
                 var phoneInfoResponse = phoneInfo.Response;
 
                 DetailsResult tagsInfoResponse = null;
-                if (!phoneInfo.Response.LimitedResult)
+                if (!phoneInfoResponse.LimitedResult && phoneInfoResponse.Profile.TagCount > 0)
                 {
-                    var tagsInfo = await api.GetTagsAsync(phoneNumber, CancellationToken.None, "UA");
+                    var tagsInfo = await Api.GetTagsAsync(phoneNumber, CancellationToken.None, "UA");
                     tagsInfoResponse = tagsInfo.Response;
                 }
 
@@ -52,7 +46,22 @@ namespace ContactInfoApp.Server.Controllers
             }
             catch (GetContactRequestException ex)
             {
-                return StatusCode((int)ex.StatusCode, "GetContact Request Error");
+                return StatusCode((int)ex.StatusCode, ex.ErrorInfo.Response);
+            }
+        }
+
+        [HttpGet(nameof(VerifyCode))]
+        public async Task<ActionResult> VerifyCode(string validationCode)
+        {
+            try
+            {
+                await Api.SendValidationCodeAsync(validationCode, CancellationToken.None);
+
+                return Ok();
+            }
+            catch (GetContactRequestException ex)
+            {
+                return StatusCode((int)ex.StatusCode, ex.ErrorInfo.Response);
             }
         }
     }
