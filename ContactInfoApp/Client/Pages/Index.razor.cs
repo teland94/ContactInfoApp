@@ -25,10 +25,14 @@ namespace ContactInfoApp.Client.Pages
 
         [Inject] private ContactHttpClient ContactHttpClient { get; set; }
 
-        string _phoneNumber;
-        Contact _contact;
+        private readonly Regex _phoneRegex = new("\\+?\\d{10,11}", RegexOptions.Compiled);
 
-        RadzenTextBox _textBox;
+        private string _phoneNumber;
+        private Contact _contact;
+
+        private RadzenTextBox _textBox;
+
+        private bool _isLoading;
 
         protected override async Task OnInitializedAsync()
         {
@@ -53,6 +57,7 @@ namespace ContactInfoApp.Client.Pages
         {
             try
             {
+                _isLoading = true;
                 _contact = await ContactHttpClient.GetContactAsync(phoneNumber);
                 await LocalStorageService.SetItemAsync("phoneNumber", phoneNumber);
             }
@@ -77,6 +82,10 @@ namespace ContactInfoApp.Client.Pages
                         await ProcessGetContact(phoneNumber);
                     }
                 }
+            }
+            finally
+            {
+                _isLoading = false;
             }
         }
 

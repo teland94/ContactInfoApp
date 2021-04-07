@@ -8,24 +8,31 @@
 
 <div class="row mb-2">
     <div class="col-md-12">
-        <RadzenImage Path="@($"data:image/jpeg;base64,{Image}")" Style="width: 100%"></RadzenImage>
+        <RadzenImage Path=@($"data:image/jpeg;base64,{Image}") Style="width: 100%" />
     </div>
 </div>
 <div class="row mb-2 justify-content-center">
     <div class="col-auto">
-        <RadzenButton Click="RefreshClick" ButtonStyle="ButtonStyle.Info" Icon="refresh" />
-        <RadzenButton Click="RecognizeClick" ButtonStyle="ButtonStyle.Light" Icon="text_snippet" />
+        @if (!_isLoading)
+        {
+            <RadzenButton Click="RefreshClick" ButtonStyle="ButtonStyle.Info" Icon="refresh" />
+            <RadzenButton Click="RecognizeClick" ButtonStyle="ButtonStyle.Light" Icon="text_snippet" />
+        }
+        else
+        {
+            <div class="spinner-inline"></div>
+        }
     </div>
 </div>
 <div class="row mb-2">
     <div class="col-md-12">
-        <RadzenTextBox @bind-Value=@_verificationCode Placeholder="Введите код с картинки" Style="width: 100%"></RadzenTextBox>
+        <RadzenTextBox @bind-Value="_verificationCode" Placeholder="Введите код с картинки" Style="width: 100%" />
     </div>
 </div>
 <div class="row justify-content-end">
     <div class="col-auto">
-        <RadzenButton Click="@((args) => DialogService.Close(_verificationCode))" Text="Ok" />
-        <RadzenButton Click="@((args) => DialogService.Close())" ButtonStyle="ButtonStyle.Secondary" Text="Отмена" />
+        <RadzenButton Click="args => DialogService.Close(_verificationCode)" ButtonStyle="ButtonStyle.Primary" Text="Ok" />
+        <RadzenButton Click="args => DialogService.Close()" ButtonStyle="ButtonStyle.Secondary" Text="Отмена" />
     </div>
 </div>
 @code {
@@ -33,20 +40,35 @@
 
     string _verificationCode;
 
+    bool _isLoading;
+
     private async Task RecognizeClick(MouseEventArgs e)
     {
-        _verificationCode = await ComputerVisionHttpClient.GetText(Image);
+        try
+        {
+            _isLoading = true;
+            _verificationCode = await ComputerVisionHttpClient.GetText(Image);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     private async Task RefreshClick(MouseEventArgs e)
     {
         try
         {
+            _isLoading = true;
             await ContactHttpClient.VerifyCodeAsync("");
         }
         catch (ContactRequestException ex)
         {
             Image = ex.ErrorResult?.Image;
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 }

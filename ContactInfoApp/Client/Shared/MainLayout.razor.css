@@ -2,10 +2,12 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .main {
     flex: 1;
+    position: relative;
 }
 
 .sidebar {

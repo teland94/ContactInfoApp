@@ -1,6 +1,6 @@
 {
-  "name": "ContactInfoApp",
-  "short_name": "ContactInfoApp",
+  "name": "Contact Info",
+  "short_name": "Contact Info",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

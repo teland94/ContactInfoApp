@@ -1,33 +1,50 @@
 ﻿@page "/"
 
-<p>
-    <RadzenTextBox Value="@_phoneNumber" Placeholder="Введите номер телефона" Change="value => _phoneNumber = value" @ref="_textBox" Style="min-width: 200px;" />
-    <RadzenButton Click=@(async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }) Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
-    <RadzenButton Click="PasteClick" Text="Вставить"></RadzenButton>
-    <RadzenButton Click="SearchClick" Text="Поиск"></RadzenButton>
-</p>
+<div class="pb-2">
+    <div class="row mb-2">
+        <div class="col-auto">
+            <RadzenTextBox @bind-Value="_phoneNumber" Placeholder="Введите номер телефона" @oninput="args => _phoneNumber = args.Value?.ToString()" @ref="_textBox" Style="min-width: 250px;" />
+            <RadzenButton Click="async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }" Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-auto">
+            <RadzenButton Click="PasteClick" Text="Вставить" ButtonStyle="ButtonStyle.Secondary" />
+            <RadzenButton Click="SearchClick" Text="Поиск" ButtonStyle="ButtonStyle.Primary" Disabled="string.IsNullOrEmpty(_phoneNumber) || !_phoneRegex.IsMatch(_phoneNumber)" />
+        </div>
+    </div>
+</div>
 
-@if (_contact != null)
+@if (!_isLoading)
 {
-    <p class="icon-item">
-        <RadzenIcon Icon="contact_page" />&nbsp;@_contact.DisplayName
-    </p>
-    @if (_contact.Tags != null)
+    if (_contact != null)
     {
-        <p>
-            <RadzenDataList WrapItems="true" Data="@_contact.Tags">
-                <Template Context="tag">
-                    <div class="icon-item">
-                        <RadzenIcon Icon="label" />&nbsp;@tag
-                    </div>
-                </Template>
-            </RadzenDataList>
-        </p>
+        <div class="pb-2">
+            <div class="icon-item mb-2">
+                <RadzenIcon Icon="contact_page" />
+                <span class="ml-1">@_contact.DisplayName</span>
+            </div>
+            @if (_contact.Tags != null)
+            {
+                <RadzenDataList WrapItems="true" Data="@_contact.Tags">
+                    <Template Context="tag">
+                        <div class="icon-item">
+                            <RadzenIcon Icon="label" />
+                            <span class="ml-1">@tag</span>
+                        </div>
+                    </Template>
+                </RadzenDataList>
+            }
+        </div>
+        @if (_contact.TagCount != null)
+        {
+            <div class="mb-2">
+                Количество тегов: @_contact.TagCount
+            </div>
+        }
     }
-    @if (_contact.TagCount != null)
-    {
-        <p>
-            Количество тегов: @_contact.TagCount
-        </p>
-    }
+}
+else
+{
+    <div class="spinner"></div>
 }
