@@ -1,10 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace ContactInfoApp.Shared
+namespace ContactInfoApp.Shared.Models
 {
-    public class Contact
+    public class ContactModel
     {
+        public string PhoneNumber { get; set; }
+
         public string DisplayName { get; set; }
+
+        public bool IsSpam { get; set; }
 
         public IEnumerable<string> Tags { get; set; }
 

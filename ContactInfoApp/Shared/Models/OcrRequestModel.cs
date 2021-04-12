@@ -1,4 +1,4 @@
-﻿namespace ContactInfoApp.Shared
+﻿namespace ContactInfoApp.Shared.Models
 {
     public class OcrRequestModel
     {

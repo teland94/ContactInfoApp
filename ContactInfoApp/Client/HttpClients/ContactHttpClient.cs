@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ContactInfoApp.Client.Exceptions;
-using ContactInfoApp.Shared;
+using ContactInfoApp.Shared.Models;
 
 namespace ContactInfoApp.Client.HttpClients
 {
@@ -20,7 +17,7 @@ namespace ContactInfoApp.Client.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<Contact> GetContactAsync(string phoneNumber)
+        public async Task<ContactModel> GetContactAsync(string phoneNumber)
         {
             var contactResult = await _httpClient.GetAsync($"?phoneNumber={phoneNumber}");
             if (!contactResult.IsSuccessStatusCode)
@@ -28,7 +25,7 @@ namespace ContactInfoApp.Client.HttpClients
                 await HandleErrorAsync(contactResult);
             }
 
-            return await contactResult.Content.ReadFromJsonAsync<Contact>();
+            return await contactResult.Content.ReadFromJsonAsync<ContactModel>();
         }
 
         public async Task<bool> VerifyCodeAsync(string validationCode)

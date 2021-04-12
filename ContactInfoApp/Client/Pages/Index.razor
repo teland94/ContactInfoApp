@@ -3,7 +3,7 @@
 <div class="pb-2">
     <div class="row mb-2">
         <div class="col-auto">
-            <RadzenTextBox @bind-Value="_phoneNumber" Placeholder="Введите номер телефона" @oninput="args => _phoneNumber = args.Value?.ToString()" @ref="_textBox" Style="min-width: 250px;" />
+            <RadzenTextBox Value=@_phoneNumber Placeholder="Введите номер телефона" @oninput="args => _phoneNumber = args.Value?.ToString()" @ref="_textBox" Style="min-width: 250px;" />
             <RadzenButton Click="async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }" Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
         </div>
     </div>
@@ -21,7 +21,7 @@
     {
         <div class="pb-2">
             <div class="icon-item mb-2">
-                <RadzenIcon Icon="contact_page" />
+                <span class="icon-item @(_contact.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="contact_page" /></span>
                 <span class="ml-1">@_contact.DisplayName</span>
             </div>
             @if (_contact.Tags != null)
@@ -29,7 +29,7 @@
                 <RadzenDataList WrapItems="true" Data="@_contact.Tags">
                     <Template Context="tag">
                         <div class="icon-item">
-                            <RadzenIcon Icon="label" />
+                            <span class="icon-item @(_contact.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="tag" /></span>
                             <span class="ml-1">@tag</span>
                         </div>
                     </Template>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -7,7 +6,7 @@ using Blazored.LocalStorage;
 using ContactInfoApp.Client.Dialogs;
 using ContactInfoApp.Client.Exceptions;
 using ContactInfoApp.Client.HttpClients;
-using ContactInfoApp.Shared;
+using ContactInfoApp.Shared.Models;
 using CurrieTechnologies.Razor.Clipboard;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -28,7 +27,7 @@ namespace ContactInfoApp.Client.Pages
         private readonly Regex _phoneRegex = new("\\+?\\d{10,11}", RegexOptions.Compiled);
 
         private string _phoneNumber;
-        private Contact _contact;
+        private ContactModel _contact;
 
         private RadzenTextBox _textBox;
 

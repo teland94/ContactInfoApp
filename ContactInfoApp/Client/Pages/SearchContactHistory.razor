@@ -1,0 +1,89 @@
+﻿@page "/search-contact-history"
+
+@using ContactInfoApp.Client.HttpClients
+@using ContactInfoApp.Shared.Models
+
+@inject SearchContactHistoryHttpClient SearchContactHistoryHttpClient
+
+<h3>История поиска</h3>
+
+<div class="mb-2">
+    <RadzenTextBox Value=@_searchQuery Placeholder="Поиск..." @oninput="args => SearchChange(args.Value?.ToString())" @ref="_textBox" Style="min-width: 300px;" />
+    <RadzenButton Click="async args => { SearchChange(null); await _textBox.Element.FocusAsync(); }" Icon="clear" ButtonStyle="ButtonStyle.Light" Style="margin-left: -5px;" />
+</div>
+
+<RadzenGrid Data="_searchContactHistoryItems" TItem="SearchContactHistoryModel" ExpandMode="DataGridExpandMode.Multiple" 
+            RowRender="RowRender" Responsive="false" EmptyText="Нет записей для отображения.">
+    <Template Context="data">
+        @if (data.Tags != null)
+        {
+            <div class="mb-2">
+                @string.Join(", ", data.Tags)
+            </div>
+        }
+        @if (data.TagCount != null)
+        {
+            <div>
+                Количество тегов: @data.TagCount
+            </div>
+        }
+    </Template>
+    <Columns>
+        <RadzenGridColumn TItem="SearchContactHistoryModel" Property="IsSpam" Width="42px">
+            <Template Context="data">
+                <span class="icon-item @(data.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="contact_page" /></span>
+            </Template>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="SearchContactHistoryModel" Property="Date" Title="Дата" Width="180px">
+            <Template Context="data">
+                @data.Date.ToLocalTime()
+            </Template>
+        </RadzenGridColumn>
+        <RadzenGridColumn TItem="SearchContactHistoryModel" Property="IpAddress" Title="IP-адрес" Width="120px"/>
+        <RadzenGridColumn TItem="SearchContactHistoryModel" Property="PhoneNumber" Title="Номер телефона" Width="150px"/>
+        <RadzenGridColumn TItem="SearchContactHistoryModel" Property="DisplayName" Title="Имя" Width="200px"/>
+        <RadzenGridColumn TItem="SearchContactHistoryModel" Property="Tags" Title="Теги">
+            <Template Context="data">
+                @if (data.Tags != null)
+                {
+                    @string.Join(", ", data.Tags)
+                }
+            </Template>
+        </RadzenGridColumn>
+    </Columns>
+</RadzenGrid>
+
+@code {
+    IEnumerable<SearchContactHistoryModel> _searchContactHistoryRawItems;
+    IEnumerable<SearchContactHistoryModel> _searchContactHistoryItems;
+
+    private string _searchQuery;
+
+    private RadzenTextBox _textBox;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _searchContactHistoryRawItems = await SearchContactHistoryHttpClient.Get();
+        _searchContactHistoryItems = _searchContactHistoryRawItems;
+    }
+
+    private void RowRender(RowRenderEventArgs<SearchContactHistoryModel> args)
+    {
+        args.Expandable = args.Data.Tags != null && args.Data.Tags.Any();
+    }
+
+    private void SearchChange(string value)
+    {
+        _searchQuery = value;
+        if (string.IsNullOrEmpty(_searchQuery))
+        {
+            _searchContactHistoryItems = _searchContactHistoryRawItems;
+            return;
+        }
+        _searchContactHistoryItems = _searchContactHistoryRawItems
+            .Where(sch =>
+                sch.PhoneNumber.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)
+                || sch.DisplayName.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)
+                || sch.Tags != null && sch.Tags.Any(t => t.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)));
+    }
+}

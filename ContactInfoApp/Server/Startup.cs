@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
 using ContactInfoApp.Server.Configuration;
+using ContactInfoApp.Server.Persistence;
 using GetContactAPI;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 
@@ -35,10 +33,13 @@ namespace ContactInfoApp.Server
                 Configuration.GetValue<string>("GetContact:AesKey")
             )));
             services.AddScoped<IComputerVisionClient>(s => new ComputerVisionClient(new ApiKeyServiceClientCredentials(
-                Configuration.GetValue<string>("ComputerVisionApi:Key")
-            )) { Endpoint = Configuration.GetValue<string>("ComputerVisionApi:Endpoint") });
+                Configuration["ComputerVisionApi:Key"]
+            )) { Endpoint = Configuration["ComputerVisionApi:Endpoint"] });
 
             services.Configure<GetContactSettings>(Configuration.GetSection("GetContact"));
+
+            services.AddDbContext<AppDbContext>();
+            services.Configure<DatabaseSettings>(Configuration.GetSection("Database"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

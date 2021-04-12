@@ -1,5 +1,4 @@
-﻿using ContactInfoApp.Shared;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
 using System;
@@ -8,6 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ContactInfoApp.Shared.Models;
 
 namespace ContactInfoApp.Server.Controllers
 {

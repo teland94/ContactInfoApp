@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-using ContactInfoApp.Shared;
+using System.Text.Json.Serialization;
 
 namespace ContactInfoApp.Client.Exceptions
 {
@@ -15,5 +15,11 @@ namespace ContactInfoApp.Client.Exceptions
             StatusCode = statusCode;
             ErrorResult = errorResult;
         }
+    }
+
+    public class ErrorResult
+    {
+        [JsonPropertyName("image")]
+        public string Image { get; set; }
     }
 }
