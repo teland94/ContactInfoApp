@@ -14,7 +14,7 @@ namespace ContactInfoApp.Client.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetText(string image)
+        public async Task<string> GetTextAsync(string image)
         {
             var res = await _httpClient.PostAsJsonAsync("ocr", new OcrRequestModel
             {

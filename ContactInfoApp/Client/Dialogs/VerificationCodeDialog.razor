@@ -47,7 +47,7 @@
         try
         {
             _isLoading = true;
-            _verificationCode = await ComputerVisionHttpClient.GetText(Image);
+            _verificationCode = await ComputerVisionHttpClient.GetTextAsync(Image);
         }
         finally
         {

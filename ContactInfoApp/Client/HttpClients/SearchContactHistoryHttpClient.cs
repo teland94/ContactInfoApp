@@ -15,9 +15,14 @@ namespace ContactInfoApp.Client.HttpClients
             _httpClient = httpClient;
         }
 
-        public Task<IEnumerable<SearchContactHistoryModel>> Get()
+        public Task<IEnumerable<SearchContactHistoryModel>> GetAsync()
         {
             return _httpClient.GetFromJsonAsync<IEnumerable<SearchContactHistoryModel>>("");
+        }
+
+        public Task DeleteAsync(int id)
+        {
+            return _httpClient.DeleteAsync($"{id}");
         }
     }
 }

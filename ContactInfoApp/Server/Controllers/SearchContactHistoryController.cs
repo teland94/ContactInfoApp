@@ -38,5 +38,20 @@ namespace ContactInfoApp.Server.Controllers
                 TagCount = sch.TagCount
             });
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var searchContactHistoryItem = await DbContext.SearchContactHistory.FindAsync(id);
+            if (searchContactHistoryItem == null)
+            {
+                return NotFound();
+            }
+
+            DbContext.SearchContactHistory.Remove(searchContactHistoryItem);
+            await DbContext.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }
