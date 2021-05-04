@@ -2,6 +2,8 @@
 
 @using ContactInfoApp.Shared.Models
 
+@if (!_searchContactHistoryPageNavigationEnabled) { return; }
+
 <h3>История поиска</h3>
 
 <div class="row">
@@ -75,11 +77,17 @@
                 </Template>
             </RadzenGridColumn>
             <RadzenGridColumn TItem="SearchContactHistoryModel" Property="DisplayName" Title="Имя" Width="250px" />
-            <RadzenGridColumn TItem="SearchContactHistoryModel" Property="Tags" Title="Теги">
+            <RadzenGridColumn TItem="SearchContactHistoryModel" Property="Tags" Title="Теги" Width="500px">
                 <Template Context="data">
                     @if (data.Tags != null)
                     {
                         @string.Join(", ", data.Tags)
+                    }
+                    @if (data.Tags == null && data.TagCount != null)
+                    {
+                        <div>
+                            Количество тегов: @data.TagCount
+                        </div>
                     }
                 </Template>
             </RadzenGridColumn>

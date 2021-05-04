@@ -1,8 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 using ContactInfoApp.Client.Exceptions;
 using ContactInfoApp.Shared.Models;
 
@@ -17,15 +19,38 @@ namespace ContactInfoApp.Client.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<ContactModel> GetContactAsync(string phoneNumber)
+        public async Task<ContactModel> SearchContactAsync(string phoneNumber)
         {
-            var contactResult = await _httpClient.GetAsync($"?phoneNumber={phoneNumber}");
+            var contactResult = await _httpClient.GetAsync($"Search?phoneNumber={phoneNumber}");
             if (!contactResult.IsSuccessStatusCode)
             {
                 await HandleErrorAsync(contactResult);
             }
 
             return await contactResult.Content.ReadFromJsonAsync<ContactModel>();
+        }
+
+        public async Task<NumberDetailModel> GetNumberDetailAsync(string phoneNumber, int? contactId = null)
+        {
+            var builder = new UriBuilder($"{_httpClient.BaseAddress}NumberDetail");
+            var query = HttpUtility.ParseQueryString(builder.Query);
+            query["phoneNumber"] = phoneNumber;
+
+            if (contactId != null)
+            {
+                query["contactId"] = contactId.Value.ToString();
+            }
+
+            builder.Query = query.ToString() ?? string.Empty;
+
+            var numberDetailResult = await _httpClient.GetAsync(builder.Uri);
+
+            if (!numberDetailResult.IsSuccessStatusCode)
+            {
+                await HandleErrorAsync(numberDetailResult);
+            }
+
+            return await numberDetailResult.Content.ReadFromJsonAsync<NumberDetailModel>();
         }
 
         public async Task<bool> VerifyCodeAsync(string validationCode)

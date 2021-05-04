@@ -34,7 +34,7 @@ namespace ContactInfoApp.Server.Controllers
                 PhoneNumber = sch.PhoneNumber,
                 DisplayName = sch.DisplayName,
                 IsSpam = sch.IsSpam,
-                Tags = JsonSerializer.Deserialize<IEnumerable<string>>(sch.Tags),
+                Tags = sch.Tags != null ? JsonSerializer.Deserialize<IEnumerable<string>>(sch.Tags) : null,
                 TagCount = sch.TagCount
             });
         }

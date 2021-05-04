@@ -15,11 +15,14 @@ namespace ContactInfoApp.Client.Pages
     public partial class SearchContactHistory : ComponentBase
     {
         [Inject] private SearchContactHistoryHttpClient SearchContactHistoryHttpClient { get; set; }
+        [Inject] private SettingsHttpClient SettingsHttpClient { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
 
         [Inject] private DialogService DialogService { get; set; }
 
         private IEnumerable<SearchContactHistoryModel> _searchContactHistoryRawItems;
         private IEnumerable<SearchContactHistoryModel> _searchContactHistoryItems;
+        private bool _searchContactHistoryPageNavigationEnabled;
 
         private string _searchQuery;
         private DataGridSelectionMode _selectionMode = DataGridSelectionMode.Single;
@@ -27,6 +30,16 @@ namespace ContactInfoApp.Client.Pages
 
         private RadzenTextBox _textBox;
         private RadzenGrid<SearchContactHistoryModel> _radzenGrid;
+
+        protected override async Task OnParametersSetAsync()
+        {
+            var uiSettings = await SettingsHttpClient.GetUiSettingsAsync();
+            _searchContactHistoryPageNavigationEnabled = uiSettings.SearchContactHistoryPageNavigationEnabled;
+            if (!uiSettings.SearchContactHistoryPageNavigationEnabled)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
 
         protected override async Task OnInitializedAsync()
         {

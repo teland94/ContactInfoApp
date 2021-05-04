@@ -26,6 +26,8 @@ namespace ContactInfoApp.Client
                 client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/computervision/"));
             services.AddHttpClient<SearchContactHistoryHttpClient>(client =>
                 client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/searchcontacthistory/"));
+            services.AddHttpClient<SettingsHttpClient>(client =>
+                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/settings/"));
 
             services.AddScoped<NotificationService>();
             services.AddScoped<DialogService>();

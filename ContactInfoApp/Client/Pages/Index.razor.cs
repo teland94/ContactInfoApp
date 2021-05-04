@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -25,9 +26,11 @@ namespace ContactInfoApp.Client.Pages
         [Inject] private ContactHttpClient ContactHttpClient { get; set; }
 
         private readonly Regex _phoneRegex = new("\\+?\\d{10,11}", RegexOptions.Compiled);
+        private readonly Regex _phoneReplaceRegex = new(@"[\s\-]", RegexOptions.Compiled);
 
         private string _phoneNumber;
         private ContactModel _contact;
+        private IEnumerable<string> _tags;
 
         private RadzenTextBox _textBox;
 
@@ -42,23 +45,32 @@ namespace ContactInfoApp.Client.Pages
         {
             if (await ClipboardService.IsSupportedAsync())
             {
-                _phoneNumber = await ClipboardService.ReadTextAsync();
+                var text = await ClipboardService.ReadTextAsync();
+                _phoneNumber = _phoneReplaceRegex.Replace(text, "");
             }
         }
 
         private async Task SearchClick(MouseEventArgs e)
         {
-            var trimmedPhoneNumber = Regex.Replace(_phoneNumber, @"\s+", "");
-            await ProcessGetContact(trimmedPhoneNumber);
+            var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
+            var contactId = await ProcessSearch(trimmedPhoneNumber);
+            if (contactId != null && !_contact.LimitedResult && _contact.TagCount > 0)
+            {
+                await ProcessNumberDetail(trimmedPhoneNumber);
+            }
         }
 
-        private async Task ProcessGetContact(string phoneNumber)
+        private async Task<int?> ProcessSearch(string phoneNumber)
         {
             try
             {
                 _isLoading = true;
-                _contact = await ContactHttpClient.GetContactAsync(phoneNumber);
+
+                _contact = await ContactHttpClient.SearchContactAsync(phoneNumber);
+
                 await LocalStorageService.SetItemAsync("phoneNumber", phoneNumber);
+
+                return _contact.Id;
             }
             catch (ContactRequestException ex)
             {
@@ -71,6 +83,44 @@ namespace ContactInfoApp.Client.Pages
                         _ => ex.Message
                     };
                     NotificationService.Notify(NotificationSeverity.Error, errorMessage, duration: 5000);
+                }
+                if (ex.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    var isVerifiedCode = await VerifyCode(errorResult.Image);
+                    if (isVerifiedCode)
+                    {
+                        await ProcessSearch(phoneNumber);
+                    }
+                }
+
+                return null;
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+
+        private async Task ProcessNumberDetail(string phoneNumber)
+        {
+            try
+            {
+                _isLoading = true;
+
+                var numberDetail = await ContactHttpClient.GetNumberDetailAsync(phoneNumber, _contact.Id);
+                _tags = numberDetail.Tags;
+            }
+            catch (ContactRequestException ex)
+            {
+                var errorResult = ex.ErrorResult;
+                if (errorResult == null)
+                {
+                    var errorMessage = ex.StatusCode switch
+                    {
+                        HttpStatusCode.NotFound => "Теги не найдены",
+                        _ => ex.Message
+                    };
+                    NotificationService.Notify(NotificationSeverity.Error, errorMessage, duration: 5000);
                     return;
                 }
                 if (ex.StatusCode == HttpStatusCode.Forbidden)
@@ -78,7 +128,7 @@ namespace ContactInfoApp.Client.Pages
                     var isVerifiedCode = await VerifyCode(errorResult.Image);
                     if (isVerifiedCode)
                     {
-                        await ProcessGetContact(phoneNumber);
+                        await ProcessNumberDetail(phoneNumber);
                     }
                 }
             }

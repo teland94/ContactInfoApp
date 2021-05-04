@@ -37,6 +37,7 @@ namespace ContactInfoApp.Server
             )) { Endpoint = Configuration["ComputerVisionApi:Endpoint"] });
 
             services.Configure<GetContactSettings>(Configuration.GetSection("GetContact"));
+            services.Configure<UiSettings>(Configuration.GetSection("Ui"));
 
             services.AddDbContext<AppDbContext>();
             services.Configure<DatabaseSettings>(Configuration.GetSection("Database"));
