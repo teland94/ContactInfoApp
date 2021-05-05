@@ -11,6 +11,7 @@ using System.Text.Json;
 using ContactInfoApp.Server.Configuration;
 using ContactInfoApp.Server.Persistence;
 using ContactInfoApp.Shared.Models;
+using IpStack;
 using Microsoft.Extensions.Options;
 
 namespace ContactInfoApp.Server.Controllers
@@ -22,14 +23,17 @@ namespace ContactInfoApp.Server.Controllers
         private GetContact Api { get; }
         private GetContactSettings GetContactSettings { get; }
         private AppDbContext DbContext { get; }
+        private IpStackClient IpStackClient { get; }
 
         public ContactController(GetContact getContact,
             IOptions<GetContactSettings> getContactSettingsAccessor,
-            AppDbContext dbContext)
+            AppDbContext dbContext,
+            IpStackClient ipStackClient)
         {
             Api = getContact;
             GetContactSettings = getContactSettingsAccessor.Value;
             DbContext = dbContext;
+            IpStackClient = ipStackClient;
         }
 
         [HttpGet(nameof(Search))]
@@ -39,7 +43,9 @@ namespace ContactInfoApp.Server.Controllers
             {
                 var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, CancellationToken.None, GetContactSettings.CountryCode);
+                var countryCode = await GetRequestCountryCodeAsync();
+
+                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, CancellationToken.None, countryCode);
                 var phoneInfoResponse = phoneInfo.Response;
 
                 var profile = phoneInfoResponse.Profile;
@@ -67,7 +73,9 @@ namespace ContactInfoApp.Server.Controllers
         {
             try
             {
-                var tagsInfo = await Api.GetTagsAsync(phoneNumber, CancellationToken.None, GetContactSettings.CountryCode);
+                var countryCode = await GetRequestCountryCodeAsync();
+
+                var tagsInfo = await Api.GetTagsAsync(phoneNumber, CancellationToken.None, countryCode);
 
                 var tags = tagsInfo.Response.Tags.Select(t => t.Tag).ToList();
 
@@ -99,6 +107,20 @@ namespace ContactInfoApp.Server.Controllers
             catch (GetContactRequestException ex)
             {
                 return StatusCode((int)ex.StatusCode, ex.ErrorInfo.Response);
+            }
+        }
+
+        private async Task<string> GetRequestCountryCodeAsync()
+        {
+            try
+            {
+                var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+                var ipAddressDetails = await IpStackClient.GetIpAddressDetailsAsync(remoteIpAddress, "country_code");
+                return ipAddressDetails.CountryCode ?? GetContactSettings.CountryCode;
+            }
+            catch (Exception)
+            {
+                return GetContactSettings.CountryCode;
             }
         }
 

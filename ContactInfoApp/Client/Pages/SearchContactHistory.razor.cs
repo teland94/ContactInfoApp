@@ -74,7 +74,7 @@ namespace ContactInfoApp.Client.Pages
             if (selectedContactHistoryItems.Count == 1)
             {
                 var selectedContactHistoryItem = selectedContactHistoryItems.First();
-                confirmMessage = $"Вы действительно хотите удалить запись: {selectedContactHistoryItem.DisplayName} - {selectedContactHistoryItem.PhoneNumber}";
+                confirmMessage = $"Вы действительно хотите удалить запись: {selectedContactHistoryItem.DisplayName} - {selectedContactHistoryItem.PhoneNumber}?";
             }
             else
             {

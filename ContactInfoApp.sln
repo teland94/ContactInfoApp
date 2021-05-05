@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactInfoApp.Shared", "Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetContactAPI", "GetContactApi\GetContactAPI.csproj", "{2899B7E4-9B83-49A4-B173-36CA13572AB8}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IpStack", "IpStack\IpStack.csproj", "{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{2899B7E4-9B83-49A4-B173-36CA13572AB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2899B7E4-9B83-49A4-B173-36CA13572AB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2899B7E4-9B83-49A4-B173-36CA13572AB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
