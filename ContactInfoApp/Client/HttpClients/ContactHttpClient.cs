@@ -1,11 +1,11 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Web;
 using ContactInfoApp.Client.Exceptions;
+using ContactInfoApp.Shared.Helpers;
 using ContactInfoApp.Shared.Models;
 
 namespace ContactInfoApp.Client.HttpClients
@@ -32,18 +32,20 @@ namespace ContactInfoApp.Client.HttpClients
 
         public async Task<NumberDetailModel> GetNumberDetailAsync(string phoneNumber, int? contactId = null)
         {
-            var builder = new UriBuilder($"{_httpClient.BaseAddress}NumberDetail");
-            var query = HttpUtility.ParseQueryString(builder.Query);
-            query["phoneNumber"] = phoneNumber;
+            var url = $"{_httpClient.BaseAddress}NumberDetail";
+            var parameters = new Dictionary<string, string>
+            {
+                { "phoneNumber", phoneNumber }
+            };
 
             if (contactId != null)
             {
-                query["contactId"] = contactId.Value.ToString();
+                parameters["contactId"] = contactId.Value.ToString();
             }
 
-            builder.Query = query.ToString() ?? string.Empty;
+            url = UrlHelpers.AddQueryParameters(url, parameters);
 
-            var numberDetailResult = await _httpClient.GetAsync(builder.Uri);
+            var numberDetailResult = await _httpClient.GetAsync(url);
 
             if (!numberDetailResult.IsSuccessStatusCode)
             {

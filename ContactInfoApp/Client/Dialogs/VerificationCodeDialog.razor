@@ -26,12 +26,13 @@
 </div>
 <div class="row mb-2">
     <div class="col-md-12">
-        <RadzenTextBox @bind-Value="_verificationCode" Placeholder="Введите код с картинки" Style="width: 100%" />
+        <RadzenTextBox Value="@_verificationCode" Placeholder="Введите код с картинки" @oninput="args => _verificationCode = args.Value?.ToString()" @onkeydown="@Enter" Style="width: 100%" />
     </div>
 </div>
 <div class="row justify-content-end">
     <div class="col-auto">
-        <RadzenButton Click="args => DialogService.Close(_verificationCode)" ButtonStyle="ButtonStyle.Primary" Text="Ok" />
+        <RadzenButton Click="args => DialogService.Close(_verificationCode)" ButtonStyle="ButtonStyle.Primary" Text="Ok"
+                      Disabled="string.IsNullOrEmpty(_verificationCode)" />
         <RadzenButton Click="args => DialogService.Close()" ButtonStyle="ButtonStyle.Secondary" Text="Отмена" />
     </div>
 </div>
@@ -69,6 +70,14 @@
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    private void Enter(KeyboardEventArgs e)
+    {
+        if (e.Code is "Enter" or "NumpadEnter")
+        {
+            DialogService.Close(_verificationCode);
         }
     }
 }

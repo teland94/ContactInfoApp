@@ -1,0 +1,15 @@
+﻿<p>Sorry, there's nothing at this address.</p>
+
+@code {
+    [Inject] public NavigationManager NavigationManager { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+        if (path == "")
+        {
+            NavigationManager.NavigateTo("/home");
+        }
+    }
+}

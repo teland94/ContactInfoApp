@@ -22,6 +22,7 @@ namespace ContactInfoApp.Client.Pages
         [Inject] private DialogService DialogService { get; set; }
         [Inject] private ILocalStorageService LocalStorageService { get; set; }
         [Inject] private ClipboardService ClipboardService { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
 
         [Inject] private ContactHttpClient ContactHttpClient { get; set; }
 
@@ -36,9 +37,20 @@ namespace ContactInfoApp.Client.Pages
 
         private bool _isLoading;
 
+        [Parameter]
+        public string PhoneNumber { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
-            _phoneNumber = await LocalStorageService.GetItemAsync<string>("phoneNumber");
+            if (!string.IsNullOrEmpty(PhoneNumber) && _phoneRegex.IsMatch(PhoneNumber))
+            {
+                _phoneNumber = PhoneNumber;
+                await Process();
+            }
+            else
+            {
+                _phoneNumber = await LocalStorageService.GetItemAsync<string>("phoneNumber");
+            }
         }
 
         private async Task PasteClick(MouseEventArgs e)
@@ -51,6 +63,17 @@ namespace ContactInfoApp.Client.Pages
         }
 
         private async Task SearchClick(MouseEventArgs e)
+        {
+            await Process();
+        }
+
+        private async Task CopyLinkClick(MouseEventArgs e)
+        {
+            var baseUri = NavigationManager.BaseUri;
+            await ClipboardService.WriteTextAsync($"{baseUri}home/{_phoneNumber.Replace("+", "")}");
+        }
+
+        private async Task Process()
         {
             var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
             var contactId = await ProcessSearch(trimmedPhoneNumber);
