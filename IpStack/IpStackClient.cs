@@ -38,7 +38,7 @@ namespace IpStack
             
             request.AddParameter("access_key", _accessKey);
 
-            var response = await client.ExecuteTaskAsync<T>(request);
+            var response = await client.ExecuteAsync<T>(request);
 
             if (response.ErrorException != null)
             {

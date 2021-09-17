@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ContactInfoApp.Client.HttpClients;
-using ContactInfoApp.Shared.Models;
+using ContactInfoApp.Client.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
@@ -20,8 +20,9 @@ namespace ContactInfoApp.Client.Pages
 
         [Inject] private DialogService DialogService { get; set; }
 
-        private IEnumerable<SearchContactHistoryModel> _searchContactHistoryRawItems;
-        private IEnumerable<SearchContactHistoryModel> _searchContactHistoryItems;
+        private IEnumerable<SearchContactHistoryViewModel> _searchContactHistoryRawViewItems;
+        private IEnumerable<SearchContactHistoryViewModel> _searchContactHistoryItems;
+
         private bool _searchContactHistoryPageNavigationEnabled;
 
         private string _searchQuery;
@@ -29,7 +30,7 @@ namespace ContactInfoApp.Client.Pages
         private object _selectedSearchContactHistoryItems;
 
         private RadzenTextBox _textBox;
-        private RadzenGrid<SearchContactHistoryModel> _radzenGrid;
+        private RadzenGrid<SearchContactHistoryViewModel> _radzenGrid;
 
         protected override async Task OnParametersSetAsync()
         {
@@ -42,12 +43,27 @@ namespace ContactInfoApp.Client.Pages
         }
 
         protected override async Task OnInitializedAsync()
-        {
-            _searchContactHistoryRawItems = await SearchContactHistoryHttpClient.GetAsync();
-            _searchContactHistoryItems = _searchContactHistoryRawItems;
+        { 
+            var searchContactHistoryRawItems = await SearchContactHistoryHttpClient.GetAsync();
+
+            _searchContactHistoryRawViewItems = searchContactHistoryRawItems.Select(sch => new SearchContactHistoryViewModel
+            {
+                Id = sch.Id,
+                Date = sch.Date,
+                IpAddress = sch.IpAddress,
+                PhoneNumber = sch.PhoneNumber,
+                DisplayName = sch.DisplayName,
+                IsSpam = sch.IsSpam,
+                Tags = sch.Tags,
+                TagCount = sch.TagCount
+            }).ToList();
+
+            CalculateSearchContactHistoryItemsProperties();
+
+            _searchContactHistoryItems = _searchContactHistoryRawViewItems;
         }
 
-        private void RowRender(RowRenderEventArgs<SearchContactHistoryModel> args)
+        private void RowRender(RowRenderEventArgs<SearchContactHistoryViewModel> args)
         {
             args.Expandable = args.Data.Tags != null && args.Data.Tags.Any();
         }
@@ -62,7 +78,7 @@ namespace ContactInfoApp.Client.Pages
         {
             _selectionMode = _selectionMode == DataGridSelectionMode.Single ? DataGridSelectionMode.Multiple : DataGridSelectionMode.Single;
             if (_selectedSearchContactHistoryItems == null) { return; }
-            _selectedSearchContactHistoryItems = _selectionMode == DataGridSelectionMode.Multiple ? new[] { (SearchContactHistoryModel)_selectedSearchContactHistoryItems } : null;
+            _selectedSearchContactHistoryItems = _selectionMode == DataGridSelectionMode.Multiple ? new[] { (SearchContactHistoryViewModel)_selectedSearchContactHistoryItems } : null;
         }
 
         private async Task DeleteSearchContactItemClick(MouseEventArgs e)
@@ -88,9 +104,22 @@ namespace ContactInfoApp.Client.Pages
                 {
                     await SearchContactHistoryHttpClient.DeleteAsync(selectedContactHistoryItem.Id);
                 }
-                _searchContactHistoryRawItems = _searchContactHistoryRawItems.Where(schr => selectedContactHistoryItems.All(sch => sch.Id != schr.Id));
+                _searchContactHistoryRawViewItems = _searchContactHistoryRawViewItems.Where(schr => selectedContactHistoryItems.All(sch => sch.Id != schr.Id));
+                CalculateSearchContactHistoryItemsProperties();
                 CheckSearchContactHistoryFilter();
                 ClearSelection();
+            }
+        }
+
+        private void CalculateSearchContactHistoryItemsProperties()
+        {
+            foreach (var searchContactHistoryItemsGroup in _searchContactHistoryRawViewItems.GroupBy(x => x.PhoneNumber))
+            {
+                var counter = 0;
+                foreach (var searchContactHistoryItem in searchContactHistoryItemsGroup.OrderBy(x => x.Date))
+                {
+                    searchContactHistoryItem.DuplicateSequenceNumber = counter++;
+                }
             }
         }
 
@@ -98,10 +127,10 @@ namespace ContactInfoApp.Client.Pages
         {
             if (string.IsNullOrEmpty(_searchQuery))
             {
-                _searchContactHistoryItems = _searchContactHistoryRawItems;
+                _searchContactHistoryItems = _searchContactHistoryRawViewItems;
                 return;
             }
-            _searchContactHistoryItems = _searchContactHistoryRawItems
+            _searchContactHistoryItems = _searchContactHistoryRawViewItems
                 .Where(sch =>
                     sch.PhoneNumber.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)
                     || sch.DisplayName.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)
@@ -114,17 +143,17 @@ namespace ContactInfoApp.Client.Pages
             _radzenGrid.SelectRow(null);
         }
 
-        private static IList<SearchContactHistoryModel> GetSelectedItems(object selectedSearchContactHistoryItems)
+        private static IList<SearchContactHistoryViewModel> GetSelectedItems(object selectedSearchContactHistoryItems)
         {
-            var selectedContactHistoryItems = new List<SearchContactHistoryModel>();
+            var selectedContactHistoryItems = new List<SearchContactHistoryViewModel>();
             switch (selectedSearchContactHistoryItems)
             {
-                case SearchContactHistoryModel searchContactHistoryItem:
+                case SearchContactHistoryViewModel searchContactHistoryItem:
                 {
                     selectedContactHistoryItems.Add(searchContactHistoryItem);
                     break;
                 }
-                case IEnumerable<SearchContactHistoryModel> searchContactHistoryItems:
+                case IEnumerable<SearchContactHistoryViewModel> searchContactHistoryItems:
                 {
                     selectedContactHistoryItems.AddRange(searchContactHistoryItems);
                     break;
