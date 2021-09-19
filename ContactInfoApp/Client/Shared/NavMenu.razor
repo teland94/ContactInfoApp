@@ -1,4 +1,5 @@
-﻿@inject HttpClients.SettingsHttpClient _settingsHttpClient
+﻿@using Blazored.LocalStorage
+@inject HttpClients.SettingsHttpClient _settingsHttpClient
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">Contact Info</a>
@@ -31,6 +32,8 @@
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    [Inject] private ILocalStorageService LocalStorageService { get; set; }
+
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
@@ -38,7 +41,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var uiSettings = await _settingsHttpClient.GetUiSettingsAsync();
-        _searchContactHistoryPageMenuVisible = uiSettings.SearchContactHistoryPageMenuVisible;
+        var searchContactHistoryPageMenuVisible = await LocalStorageService.GetItemAsync<bool?>("searchContactHistoryPageMenuVisible");
+        if (searchContactHistoryPageMenuVisible == null)
+        {
+            var uiSettings = await _settingsHttpClient.GetUiSettingsAsync();
+            searchContactHistoryPageMenuVisible = uiSettings.SearchContactHistoryPageMenuVisible;
+            await LocalStorageService.SetItemAsync("searchContactHistoryPageMenuVisible", searchContactHistoryPageMenuVisible);
+        }
+        _searchContactHistoryPageMenuVisible = searchContactHistoryPageMenuVisible.Value;
     }
 }
