@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31112.23
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31911.260
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactInfoApp.Server", "ContactInfoApp\Server\ContactInfoApp.Server.csproj", "{EC179B0D-14DA-45B1-A98B-674873145C26}"
 EndProject
@@ -12,6 +12,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetContactAPI", "GetContactApi\GetContactAPI.csproj", "{2899B7E4-9B83-49A4-B173-36CA13572AB8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IpStack", "IpStack\IpStack.csproj", "{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactInfoApp.Mobile", "ContactInfoApp.Mobile\ContactInfoApp.Mobile.csproj", "{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContactInfoApp.UI", "ContactInfoApp.UI\ContactInfoApp.UI.csproj", "{BDB2C2AA-D611-4FDA-8ACF-46202D7C3561}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,16 @@ Global
 		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C25EDC4A-0915-4C2C-8D9D-638EF61C9909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82DF9CE6-D9DC-46E9-9BA6-868918BD7A77}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{BDB2C2AA-D611-4FDA-8ACF-46202D7C3561}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDB2C2AA-D611-4FDA-8ACF-46202D7C3561}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDB2C2AA-D611-4FDA-8ACF-46202D7C3561}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDB2C2AA-D611-4FDA-8ACF-46202D7C3561}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

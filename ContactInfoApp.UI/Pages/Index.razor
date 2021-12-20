@@ -1,0 +1,60 @@
+﻿@page "/home"
+@page "/home/{PhoneNumber}"
+
+<div class="pb-2">
+    <div class="row mb-2">
+        <div class="col-auto">
+            <div class="input-group">
+                <RadzenTextBox Value=@_phoneNumber Placeholder="Введите номер телефона" @oninput="args => _phoneNumber = args.Value?.ToString()" @ref="_textBox" Style="min-width: 250px;" 
+                               type="tel" />
+                <div class="input-group-append">
+                    <RadzenButton Click="async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }" Icon="clear" ButtonStyle="ButtonStyle.Light" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-auto">
+            <RadzenButton Click="PasteClick" Text="Вставить" ButtonStyle="ButtonStyle.Secondary" />
+            <RadzenButton Click="SearchClick" Text="Поиск" ButtonStyle="ButtonStyle.Primary" Disabled="string.IsNullOrEmpty(_phoneNumber) || !_phoneRegex.IsMatch(_phoneNumber)" />
+        </div>
+    </div>
+</div>
+
+@if (!_isLoading)
+{
+    if (_contact != null)
+    {
+        <div class="pb-2">
+            <div class="icon-item mb-2">
+                <span class="icon-item @(_contact.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="contact_page" /></span>
+                <span class="ml-1">@_contact.DisplayName</span>
+            </div>
+            @if (_tags != null)
+            {
+                <RadzenDataList WrapItems="true" Data="@_tags">
+                    <Template Context="tag">
+                        <div class="icon-item">
+                            <span class="icon-item @(_contact.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="tag" /></span>
+                            <span class="ml-1">@tag</span>
+                        </div>
+                    </Template>
+                </RadzenDataList>
+            }
+        </div>
+        @if (_contact.TagCount != null)
+        {
+            <div class="mb-2">
+                Количество тегов: @_contact.TagCount
+            </div>
+        }
+        <div class="mb-2">
+            <RadzenButton Click='async (e) => await JsRuntime.InvokeVoidAsync("back")' Text="Назад"></RadzenButton>
+            <RadzenButton Click="CopyLinkClick" Text="Копировать ссылку" ButtonStyle="ButtonStyle.Info"></RadzenButton>
+        </div>
+    }
+}
+else
+{
+    <div class="spinner"></div>
+}

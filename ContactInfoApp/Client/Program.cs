@@ -4,9 +4,11 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Blazored.LocalStorage;
-using ContactInfoApp.Client.HttpClients;
+using ContactInfoApp.UI.HttpClients;
+using ContactInfoApp.UI.Interfaces;
 using CurrieTechnologies.Razor.Clipboard;
 using Radzen;
+using ClipboardService = ContactInfoApp.Client.Services.ClipboardService;
 
 namespace ContactInfoApp.Client
 {
@@ -33,6 +35,8 @@ namespace ContactInfoApp.Client
             services.AddScoped<DialogService>();
             services.AddBlazoredLocalStorage();
             services.AddClipboard();
+
+            services.AddScoped<IClipboardService, ClipboardService>();
 
             await builder.Build().RunAsync();
         }

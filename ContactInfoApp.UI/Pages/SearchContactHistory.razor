@@ -1,0 +1,98 @@
+﻿@page "/search-contact-history"
+@using ContactInfoApp.UI.ViewModels
+
+@if (!_searchContactHistoryPageNavigationEnabled) { return; }
+
+<h3>История поиска</h3>
+
+<div class="row">
+    <div class="col-xl-5 col-md-6 col-sm-12 mb-2">
+        <div class="input-group">
+            <RadzenTextBox Value=@_searchQuery Placeholder="Поиск..." @oninput="args => SearchChange(args.Value?.ToString())" @ref="_textBox" class="form-control" />
+            <div class="input-group-append">
+                <RadzenButton Click="async args => { SearchChange(null); await _textBox.Element.FocusAsync(); }" Icon="clear" ButtonStyle="ButtonStyle.Light" />
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-7 col-md-6 col-sm-12 mb-2">
+        <RadzenButton Click="ToggleSelectionModeClick" Icon="table_rows" ButtonStyle="_selectionMode == DataGridSelectionMode.Single ? ButtonStyle.Light : ButtonStyle.Info"
+                      Disabled="_searchContactHistoryItems == null" />
+        <RadzenButton Click="DeleteSearchContactItemClick" Icon="delete" ButtonStyle="ButtonStyle.Danger" Disabled="_selectedSearchContactHistoryItems == null" />
+    </div>
+</div>
+
+@if (_searchContactHistoryItems != null)
+{
+    <RadzenGrid Data="_searchContactHistoryItems" TItem="SearchContactHistoryViewModel" ExpandMode="DataGridExpandMode.Multiple"
+                SelectionMode="_selectionMode" @bind-Value="_selectedSearchContactHistoryItems"
+                RowRender="RowRender" RowClick="args => StateHasChanged()" Responsive="false"
+                AllowPaging="true" PageSize="15" AllowColumnResize="true" @ref="_radzenGrid">
+        <Template Context="data">
+            @if (data.Tags != null)
+            {
+                <div class="mb-2">
+                    @string.Join(", ", data.Tags)
+                </div>
+            }
+            @if (data.TagCount != null)
+            {
+                <div>
+                    Количество тегов: @data.TagCount
+                </div>
+            }
+        </Template>
+        <Columns>
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Width="42px" Visible="_selectionMode == DataGridSelectionMode.Multiple">
+                <HeaderTemplate>
+                    <RadzenCheckBox TriState="false" TValue="bool"
+                                    Value="@(_searchContactHistoryItems.Any(i => _selectedSearchContactHistoryItems != null && (_selectedSearchContactHistoryItems as IEnumerable<SearchContactHistoryViewModel>).Contains(i)))"
+                                    Change="@(args => _selectedSearchContactHistoryItems = args ? _searchContactHistoryItems : null)" />
+                </HeaderTemplate>
+                <Template Context="data">
+                    <RadzenCheckBox TriState="false" Value="@(_selectedSearchContactHistoryItems != null && (_selectedSearchContactHistoryItems as IEnumerable<SearchContactHistoryViewModel>).Contains(data))" />
+                </Template>
+            </RadzenGridColumn>
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="IsSpam" Width="42px">
+                <Template Context="data">
+                    <span class="icon-item @(data.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="contact_page" /></span>
+                </Template>
+            </RadzenGridColumn>
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="Date" Title="Дата" Width="150px">
+                <Template Context="data">
+                    @data.Date.ToLocalTime().ToString("g")
+                </Template>
+            </RadzenGridColumn>
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="IpAddress" Title="IP-адрес" Width="120px" />
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="PhoneNumber" Title="Номер телефона" Width="150px">
+                <Template Context="data">
+                    @data.PhoneNumber
+                    @{
+                        if (_searchContactHistoryItems.Count(sch => sch.PhoneNumber == data.PhoneNumber) > 1)
+                        {
+                            @($" ({data.DuplicateSequenceNumber + 1})")
+                        }
+                    }
+                </Template>
+            </RadzenGridColumn>
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="DisplayName" Title="Имя" Width="250px" />
+            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="Tags" Title="Теги" Width="500px">
+                <Template Context="data">
+                    @if (data.Tags != null)
+                    {
+                        @string.Join(", ", data.Tags)
+                    }
+                    @if (data.Tags == null && data.TagCount != null)
+                    {
+                        <div>
+                            Количество тегов: @data.TagCount
+                        </div>
+                    }
+                </Template>
+            </RadzenGridColumn>
+        </Columns>
+    </RadzenGrid>
+}
+else
+{
+    <div class="spinner"></div>
+}

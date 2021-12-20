@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>ContactInfoApp.Mobile</title>
+	<base href="/" />
+	<link href="_content/ContactInfoApp.UI/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="_content/Radzen.Blazor/css/default-base.css">
+	<link href="_content/ContactInfoApp.UI/css/app.css" rel="stylesheet" />
+	<link href="_content/ContactInfoApp.UI/ContactInfoApp.UI.bundle.scp.css" rel="stylesheet" />
+	<!--<link href="ContactInfoApp.Mobile.styles.css" rel="stylesheet" />-->
+</head>
+
+<body>
+
+	<div id="app">Loading...</div>
+
+	<div id="blazor-error-ui">
+		An unhandled error has occurred.
+		<a href="" class="reload">Reload</a>
+		<a class="dismiss">🗙</a>
+	</div>
+
+	<script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+    <script>
+        window.back = function() {
+            window.history.back();
+        };
+    </script>
+</body>
+
+</html>
