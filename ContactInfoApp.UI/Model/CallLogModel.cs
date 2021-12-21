@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 namespace ContactInfoApp.UI.Model
 {
@@ -24,17 +23,9 @@ namespace ContactInfoApp.UI.Model
             }
         }
 
-        public long CallDateTick { get; set; }
-
-        public DateTime CallDate =>
-            new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(this.CallDateTick);
+        public DateTime CallDate { get; set; }
 
         public string CallType { get; set; }
-
-        public string CallTitle => $"{CallNumber} - {CallName}";
-
-        public string CallDescription =>
-            $"{CallDate.ToString("g", CultureInfo.CreateSpecificCulture("en-us"))} - {CallType} | Duration: {CallDurationFormat}";
     }
 }
     

@@ -1,58 +1,51 @@
 ﻿@page "/phone-contacts"
 @using ContactInfoApp.UI.Model
 @using ContactInfoApp.UI.Interfaces
+@using ContactInfoApp.UI.ViewModels
 
 <h3>Недавние вызовы</h3>
 
-@if (_callLogs != null)
+@if (_groupedCallLogs != null)
 {
-    @*<table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Phone</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var callLog in _callLogs)
-            {
-                <tr>
-                    <td>@callLog.CallName</td>
-                    <td>@callLog.CallDate</td>
-                    <td>@callLog.CallNumber</td>
-                    <td>
-                        <RadzenButton Click="args => GetContactInfoClick(args, callLog)" Icon="info" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>*@
-
-    <RadzenDataList Data="@_callLogs" TItem="CallLogModel">
-        <Template Context="callLog">
-            <RadzenCard Style="width: 100%; padding: 0; overflow: hidden;">
+    foreach (var groupedCallLog in _groupedCallLogs)
+    {
+        <h6 class="mt-1">@groupedCallLog.Date.ToLongDateString()</h6>
+        <RadzenDataList Data="@groupedCallLog.CallLogs" TItem="GroupedPhoneNumberViewModel">
+            <Template Context="groupedPhoneNumber">
+                @{
+                    var callLog = groupedPhoneNumber.CallLog;
+                }
                 <div class="container pr-0">
                     <div class="row">
                         <div class="col">
                             <div class="row">
-                                @if (!string.IsNullOrEmpty(@callLog.CallName))
+                                @if (!string.IsNullOrEmpty(callLog.CallName))
                                 {
-                                    @($"{callLog.CallName} - {callLog.CallNumber}")
+                                    @callLog.CallName
                                 }
                                 else
                                 {
                                     @callLog.CallNumber
                                 }
+                                @if (groupedPhoneNumber.Count > 1)
+                                {
+                                    @($" ({groupedPhoneNumber.Count})")
+                                }
                             </div>
                             <div class="row">
                                 @switch (callLog.CallType)
                                 {
-                                    case "Incoming": <RadzenIcon Icon="call_made"></RadzenIcon> break;
-                                    case "Outgoing": <RadzenIcon Icon="call_received"></RadzenIcon> break;
-                                    case "Blocked": <RadzenIcon Icon="block" class="text-danger"></RadzenIcon> break;
+                                    case "Incoming":
+                                        <RadzenIcon Icon="call_made"></RadzenIcon>
+                                        break;
+                                    case "Outgoing":
+                                        <RadzenIcon Icon="call_received"></RadzenIcon>
+                                        break;
+                                    case "Blocked":
+                                        <RadzenIcon Icon="block" class="text-danger"></RadzenIcon>
+                                        break;
                                 }
-                                &nbsp;&bull; @callLog.CallDate
+                                &nbsp;&bull; @callLog.CallDate.ToString("ddd, HH:mm")
                             </div>
                         </div>
                         <div class="col-auto d-flex">
@@ -62,9 +55,9 @@
                         </div>
                     </div>
                 </div>
-            </RadzenCard>
-        </Template>
-    </RadzenDataList>
+            </Template>
+        </RadzenDataList>
+    }
 }
 else
 {
@@ -72,7 +65,7 @@ else
 }
 
 @code {
-    private IEnumerable<CallLogModel> _callLogs;
+    private IEnumerable<GroupedCallLogViewModel> _groupedCallLogs;
 
     [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -80,7 +73,26 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _callLogs = CallLogService.GetCallLogs();
+        var callLogs = CallLogService.GetCallLogs().ToList();
+
+        foreach (var callLog in callLogs)
+        {
+            callLog.CallDate = callLog.CallDate.ToLocalTime();
+        }
+
+        _groupedCallLogs = callLogs
+            .GroupBy(g => g.CallDate.Date)
+            .Select(x => new GroupedCallLogViewModel
+            {
+                Date = x.Key,
+                CallLogs = x
+                    .GroupBy(g => g.CallNumber)
+                    .Select(xx => new GroupedPhoneNumberViewModel
+                    {
+                        Count = xx.Count(),
+                        CallLog = xx.FirstOrDefault()
+                    })
+            });
     }
 
     private void GetContactInfoClick(MouseEventArgs e, CallLogModel callLog)

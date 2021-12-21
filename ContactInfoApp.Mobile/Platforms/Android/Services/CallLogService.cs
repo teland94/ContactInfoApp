@@ -30,7 +30,7 @@ namespace ContactInfoApp.Mobile.Platforms.Android.Services
                         CallName = callName,
                         CallNumber = callNumber,
                         CallDuration = callDuration,
-                        CallDateTick = callDate,
+                        CallDate = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(callDate),
                         CallType = callType
                     };
 

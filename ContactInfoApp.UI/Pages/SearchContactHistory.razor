@@ -42,7 +42,7 @@
             }
         </Template>
         <Columns>
-            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Width="42px" Visible="_selectionMode == DataGridSelectionMode.Multiple">
+@*            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Width="42px" Visible="_selectionMode == DataGridSelectionMode.Multiple">
                 <HeaderTemplate>
                     <RadzenCheckBox TriState="false" TValue="bool"
                                     Value="@(_searchContactHistoryItems.Any(i => _selectedSearchContactHistoryItems != null && (_selectedSearchContactHistoryItems as IEnumerable<SearchContactHistoryViewModel>).Contains(i)))"
@@ -52,7 +52,7 @@
                     <RadzenCheckBox TriState="false" Value="@(_selectedSearchContactHistoryItems != null && (_selectedSearchContactHistoryItems as IEnumerable<SearchContactHistoryViewModel>).Contains(data))" />
                 </Template>
             </RadzenGridColumn>
-            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="IsSpam" Width="42px">
+*@            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="IsSpam" Width="42px">
                 <Template Context="data">
                     <span class="icon-item @(data.IsSpam ? "text-danger" : "")"><RadzenIcon Icon="contact_page" /></span>
                 </Template>
@@ -62,8 +62,8 @@
                     @data.Date.ToLocalTime().ToString("g")
                 </Template>
             </RadzenGridColumn>
-            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="IpAddress" Title="IP-адрес" Width="120px" />
-            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="PhoneNumber" Title="Номер телефона" Width="150px">
+@*            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="IpAddress" Title="IP-адрес" Width="120px" />
+*@            <RadzenGridColumn TItem="SearchContactHistoryViewModel" Property="PhoneNumber" Title="Номер телефона" Width="150px">
                 <Template Context="data">
                     @data.PhoneNumber
                     @{
