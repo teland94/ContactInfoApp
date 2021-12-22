@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ContactInfoApp.Server.Persistence;
 using ContactInfoApp.Shared.Models;
+using ContactInfoApp.Shared.Request;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContactInfoApp.Server.Controllers
@@ -37,6 +38,23 @@ namespace ContactInfoApp.Server.Controllers
                 Tags = sch.Tags != null ? JsonSerializer.Deserialize<IEnumerable<string>>(sch.Tags) : null,
                 TagCount = sch.TagCount
             });
+        }
+
+        [HttpPost(nameof(GetPhoneNumbersInfo))]
+        public Task<List<ContactHistoryPhoneNumberInfoModel>> GetPhoneNumbersInfo(ContactHistoryPhoneNumberInfoRequestModel model)
+        {
+            return DbContext.SearchContactHistory
+                .Where(sch => model.PhoneNumbers.Any(p => p == sch.PhoneNumber))
+                .OrderByDescending(sch => sch.Date)
+                .Select(sch => new ContactHistoryPhoneNumberInfoModel
+                {
+                    PhoneNumber = sch.PhoneNumber,
+                    DisplayName = sch.DisplayName,
+                    IsSpam = sch.IsSpam
+                })
+                .GroupBy(sch => sch.PhoneNumber)
+                .Select(x => x.FirstOrDefault())
+                .ToListAsync();
         }
 
         [HttpDelete("{id}")]

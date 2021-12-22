@@ -10,7 +10,6 @@ using ContactInfoApp.UI.HttpClients;
 using ContactInfoApp.UI.Interfaces;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.JSInterop;
 using Radzen;
 using Radzen.Blazor;
 
@@ -23,7 +22,6 @@ namespace ContactInfoApp.UI.Pages
         [Inject] private ILocalStorageService LocalStorageService { get; set; }
         [Inject] private IClipboardService ClipboardService { get; set; }
         [Inject] private NavigationManager NavigationManager { get; set; }
-        [Inject] private IJSRuntime JsRuntime { get; set; }
 
         [Inject] private ContactHttpClient ContactHttpClient { get; set; }
 

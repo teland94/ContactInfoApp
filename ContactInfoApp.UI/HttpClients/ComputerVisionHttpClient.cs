@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using ContactInfoApp.Shared.Models;
+using ContactInfoApp.Shared.Request;
 
 namespace ContactInfoApp.UI.HttpClients
 {

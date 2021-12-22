@@ -2,6 +2,10 @@
 @inject HttpClients.SettingsHttpClient _settingsHttpClient
 
 <div class="top-row pl-4 navbar navbar-dark">
+    @if (!IsBrowser)
+    {
+        <RadzenButton Click='async (e) => await JsRuntime.InvokeVoidAsync("back")' Icon="arrow_back"></RadzenButton>
+    }
     <a class="navbar-brand" href="">Contact Info</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -39,9 +43,13 @@
     private bool _searchContactHistoryPageMenuVisible;
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
     private bool IsAndroid => OperatingSystem.IsAndroid();
+    private bool IsBrowser => OperatingSystem.IsBrowser();
 
     [Inject] private ILocalStorageService LocalStorageService { get; set; }
+
+    [Inject] private IJSRuntime JsRuntime { get; set; }
 
     private void ToggleNavMenu()
     {

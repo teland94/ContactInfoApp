@@ -1,4 +1,5 @@
-﻿using ContactInfoApp.Server.Configuration;
+﻿using System.Diagnostics;
+using ContactInfoApp.Server.Configuration;
 using ContactInfoApp.Server.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ namespace ContactInfoApp.Server.Persistence
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite(DatabaseSettings.ConnectionString);
+            optionsBuilder.LogTo(message => Debug.WriteLine(message));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

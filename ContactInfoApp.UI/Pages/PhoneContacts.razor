@@ -2,6 +2,9 @@
 @using ContactInfoApp.UI.Model
 @using ContactInfoApp.UI.Interfaces
 @using ContactInfoApp.UI.ViewModels
+@using ContactInfoApp.UI.HttpClients
+@using ContactInfoApp.Shared.Models
+@using ContactInfoApp.Shared.Request
 
 <h3>Недавние вызовы</h3>
 
@@ -21,7 +24,7 @@
                             <div class="row">
                                 @if (!string.IsNullOrEmpty(callLog.CallName))
                                 {
-                                    @callLog.CallName
+                                    <span class="@(groupedPhoneNumber.IsModifiedByContactHistory ? "text-info": "")">@callLog.CallName</span>
                                 }
                                 else
                                 {
@@ -71,6 +74,8 @@ else
 
     [Inject] private ICallLogService CallLogService { get; set; }
 
+    [Inject] private SearchContactHistoryHttpClient SearchContactHistoryHttpClient { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         var callLogs = CallLogService.GetCallLogs().ToList();
@@ -80,17 +85,41 @@ else
             callLog.CallDate = callLog.CallDate.ToLocalTime();
         }
 
-        _groupedCallLogs = callLogs
+        var historyPhoneNumbers = await SearchContactHistoryHttpClient.GetPhoneNumbersInfoAsync(new ContactHistoryPhoneNumberInfoRequestModel
+        {
+            PhoneNumbers = callLogs.Select(x => x.CallNumber).Distinct()
+        });
+
+        _groupedCallLogs = GetGroupedCallLogs(callLogs, historyPhoneNumbers);
+    }
+
+    private IEnumerable<GroupedCallLogViewModel> GetGroupedCallLogs(IEnumerable<CallLogModel> callLogs, IEnumerable<ContactHistoryPhoneNumberInfoModel> historyPhoneNumbers)
+    {
+        return callLogs
             .GroupBy(g => g.CallDate.Date)
             .Select(x => new GroupedCallLogViewModel
             {
                 Date = x.Key,
                 CallLogs = x
                     .GroupBy(g => g.CallNumber)
-                    .Select(xx => new GroupedPhoneNumberViewModel
+                    .Select(xx =>
                     {
-                        Count = xx.Count(),
-                        CallLog = xx.FirstOrDefault()
+                        var callLog = xx.First();
+
+                        var isModifiedByContactHistory = false;
+                        var historyPhoneNumber = historyPhoneNumbers.FirstOrDefault(p => p.PhoneNumber == callLog.CallNumber);
+                        if (historyPhoneNumber != null)
+                        {
+                            callLog.CallName = historyPhoneNumber.DisplayName;
+                            isModifiedByContactHistory = true;
+                        }
+
+                        return new GroupedPhoneNumberViewModel
+                        {
+                            Count = xx.Count(),
+                            CallLog = callLog,
+                            IsModifiedByContactHistory = isModifiedByContactHistory
+                        };
                     })
             });
     }

@@ -7,5 +7,7 @@ namespace ContactInfoApp.UI.ViewModels
         public int Count { get; set; }
 
         public CallLogModel CallLog { get; set; }
+
+        public bool IsModifiedByContactHistory { get; set; }
     }
 }
