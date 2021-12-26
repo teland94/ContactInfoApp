@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\GetContactApi\GetContactAPI.csproj" />
-    <ProjectReference Include="..\..\IpStack\IpStack.csproj" />
     <ProjectReference Include="..\Client\ContactInfoApp.Client.csproj" />
     <ProjectReference Include="..\Shared\ContactInfoApp.Shared.csproj" />
   </ItemGroup>
