@@ -23,7 +23,7 @@ namespace ContactInfoApp.Mobile.Platforms.Android.Services
                     var callName = phones.GetString(phones.GetColumnIndex(CallLog.Calls.CachedName));
 
                     var callTypeInt = phones.GetInt(phones.GetColumnIndex(CallLog.Calls.Type));
-                    var callType = Enum.GetName(typeof(CallType), callTypeInt);
+                    var callType = (UI.Model.CallType)callTypeInt;
 
                     var log = new CallLogModel
                     {

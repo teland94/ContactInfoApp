@@ -25,7 +25,17 @@ namespace ContactInfoApp.UI.Model
 
         public DateTime CallDate { get; set; }
 
-        public string CallType { get; set; }
+        public CallType CallType { get; set; }
+    }
+
+    public enum CallType
+    {
+        Incoming = 1,
+        Outgoing = 2,
+        Missed = 3,
+        Voicemail = 4,
+        Rejected = 5,
+        Blocked = 6,
+        AnsweredExternally = 7
     }
 }
-    

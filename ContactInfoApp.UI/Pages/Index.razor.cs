@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -76,6 +77,7 @@ namespace ContactInfoApp.UI.Pages
         private async Task Process()
         {
             var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
+            _tags = Enumerable.Empty<string>();
             var contactId = await ProcessSearch(trimmedPhoneNumber);
             if (contactId != null && !_contact.LimitedResult && _contact.TagCount > 0)
             {

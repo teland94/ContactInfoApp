@@ -22,33 +22,39 @@
                     <div class="row">
                         <div class="col">
                             <div class="row">
-                                @if (!string.IsNullOrEmpty(callLog.CallName))
-                                {
-                                    <span class="@(groupedPhoneNumber.IsModifiedByContactHistory ? "text-info": "")">@callLog.CallName</span>
-                                }
-                                else
-                                {
-                                    @callLog.CallNumber
-                                }
-                                @if (groupedPhoneNumber.Count > 1)
-                                {
-                                    @($" ({groupedPhoneNumber.Count})")
-                                }
+                                <span class="@(groupedPhoneNumber.IsModifiedByContactHistory ? "text-info" : "")">
+                                    @if (!string.IsNullOrEmpty(callLog.CallName))
+                                    {
+                                        @callLog.CallName
+                                    }
+                                    else
+                                    {
+                                        @callLog.CallNumber
+                                    }
+                                    @if (groupedPhoneNumber.Count > 1)
+                                    {
+                                        @($" ({groupedPhoneNumber.Count})")
+                                    }
+                                </span>
                             </div>
                             <div class="row">
                                 @switch (callLog.CallType)
                                 {
-                                    case "Incoming":
+                                    case CallType.Outgoing:
                                         <RadzenIcon Icon="call_made"></RadzenIcon>
                                         break;
-                                    case "Outgoing":
+                                    case CallType.Incoming:
                                         <RadzenIcon Icon="call_received"></RadzenIcon>
                                         break;
-                                    case "Blocked":
+                                    case CallType.Missed:
+                                    case CallType.Rejected:
+                                        <RadzenIcon Icon="call_missed" class="text-warning"></RadzenIcon>
+                                        break;
+                                    case CallType.Blocked:
                                         <RadzenIcon Icon="block" class="text-danger"></RadzenIcon>
                                         break;
                                 }
-                                &nbsp;&bull; @callLog.CallDate.ToString("ddd, HH:mm")
+                                <span class="@(callLog.CallType == CallType.Missed ? "text-warning" : "")">&nbsp;&bull; @callLog.CallDate.ToString("ddd, HH:mm")</span>
                             </div>
                         </div>
                         <div class="col-auto d-flex">
