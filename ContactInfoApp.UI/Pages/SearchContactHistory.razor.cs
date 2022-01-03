@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ContactInfoApp.UI.HttpClients;
+using ContactInfoApp.UI.Interfaces;
 using ContactInfoApp.UI.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -14,7 +15,7 @@ namespace ContactInfoApp.UI.Pages
     public partial class SearchContactHistory : ComponentBase
     {
         [Inject] private SearchContactHistoryHttpClient SearchContactHistoryHttpClient { get; set; }
-        [Inject] private SettingsHttpClient SettingsHttpClient { get; set; }
+        [Inject] private ISettingsService SettingsService { get; set; }
         [Inject] private NavigationManager NavigationManager { get; set; }
 
         [Inject] private DialogService DialogService { get; set; }
@@ -33,7 +34,7 @@ namespace ContactInfoApp.UI.Pages
 
         protected override async Task OnParametersSetAsync()
         {
-            var uiSettings = await SettingsHttpClient.GetUiSettingsAsync();
+            var uiSettings = await SettingsService.GetUiSettingsAsync();
             _searchContactHistoryPageNavigationEnabled = uiSettings.SearchContactHistoryPageNavigationEnabled;
             if (!uiSettings.SearchContactHistoryPageNavigationEnabled)
             {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Blazored.LocalStorage;
 using ContactInfoApp.UI.HttpClients;
 using ContactInfoApp.UI.Interfaces;
+using ContactInfoApp.UI.Services;
 using CurrieTechnologies.Razor.Clipboard;
 using Radzen;
 using ClipboardService = ContactInfoApp.Client.Services.ClipboardService;
@@ -37,6 +38,8 @@ namespace ContactInfoApp.Client
             services.AddClipboard();
 
             services.AddScoped<IClipboardService, ClipboardService>();
+
+            services.AddScoped<ISettingsService, SettingsService>();
 
             await builder.Build().RunAsync();
         }

@@ -1,7 +1,11 @@
 ﻿@page "/search-contact-history"
 @using ContactInfoApp.UI.ViewModels
 
-@if (!_searchContactHistoryPageNavigationEnabled) { return; }
+@if (!_searchContactHistoryPageNavigationEnabled)
+{
+    <div class="spinner"></div>
+    return;
+}
 
 <h3>История поиска</h3>
 

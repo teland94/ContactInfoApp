@@ -9,8 +9,6 @@ namespace ContactInfoApp.UI.HttpClients
     {
         private readonly HttpClient _httpClient;
 
-        private static UiSettingsModel _uiSettings;
-
         public SettingsHttpClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -18,7 +16,7 @@ namespace ContactInfoApp.UI.HttpClients
 
         public async Task<UiSettingsModel> GetUiSettingsAsync()
         {
-            return _uiSettings ??= await _httpClient.GetFromJsonAsync<UiSettingsModel>("GetUiSettings");
+            return await _httpClient.GetFromJsonAsync<UiSettingsModel>("GetUiSettings");
         }
     }
 }

@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using ContactInfoApp.Mobile.Platforms.Android.Services;
 using ContactInfoApp.UI.HttpClients;
 using ContactInfoApp.UI.Interfaces;
+using ContactInfoApp.UI.Services;
 using Microsoft.AspNetCore.Components.WebView.Maui;
 using Radzen;
 using ClipboardService = ContactInfoApp.Mobile.Services.ClipboardService;
@@ -47,6 +48,8 @@ namespace ContactInfoApp.Mobile
 
             services.AddScoped<IClipboardService, ClipboardService>();
             services.AddScoped<ICallLogService, CallLogService>();
+
+            services.AddScoped<ISettingsService, SettingsService>();
 
             return builder.Build();
         }
