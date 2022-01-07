@@ -49,9 +49,9 @@ namespace GetContactAPI
             var reqObj = new
             {
                 countryCode = countryCode ?? "RU",
+                phoneNumber = phone,
                 source,
                 token = _data.Token,
-                phoneNumber = phone
             };
 
             return await SendRequestAsync<T>(url, reqObj, ct);
@@ -78,7 +78,7 @@ namespace GetContactAPI
 
             request.Content = new StringContent(data, Encoding.UTF8, "application/json");
 
-            request.Headers.Add("X-App-Version", "4.9.1");
+            request.Headers.Add("X-App-Version", "5.6.2");
             request.Headers.Add("X-Token", _data.Token);
             request.Headers.Add("X-Os", "android 5.0");
             request.Headers.Add("X-Client-Device-Id", "14130e29cebe9c39");

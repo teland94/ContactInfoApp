@@ -23,7 +23,7 @@ namespace GetContactAPI
         /// <summary>
         /// Ключ шифрования
         /// </summary>
-        public string Key { get; } = "2Wq7)qkX~cp7)H|n_tc&o+:G_USN3/-uIi~>M+c ;Oq]E{t9)RC_5|lhAA_Qq%_4";
+        public string Key { get; } = "y1gY|J%&6V kTi$>_Ali8]/xCqmMMP1$*)I8FwJ,*r_YUM 4h?@7+@#<>+w-e3VW";
 
         public Data(string token, string aesKey)
         {
