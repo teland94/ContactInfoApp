@@ -80,6 +80,14 @@ a, .btn-link {
     animation: spin 700ms linear infinite;
 }
 
+.rz-datalist-sm ul {
+    padding: 0.5rem 0;
+}
+
+.rz-datalist-sm ul li {
+    padding: 0.5rem;
+}
+
 @keyframes spin {
     0% {
         transform: rotate(0deg)

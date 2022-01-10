@@ -55,6 +55,31 @@ namespace ContactInfoApp.UI.HttpClients
             return await numberDetailResult.Content.ReadFromJsonAsync<NumberDetailModel>();
         }
 
+        public async Task<CommentsModel> GetComments(string phoneNumber, int? contactId = null)
+        {
+            var url = $"{_httpClient.BaseAddress}Comments";
+            var parameters = new Dictionary<string, string>
+            {
+                { "phoneNumber", phoneNumber }
+            };
+
+            if (contactId != null)
+            {
+                parameters["contactId"] = contactId.Value.ToString();
+            }
+
+            url = UrlHelpers.AddQueryParameters(url, parameters);
+
+            var commentsResult = await _httpClient.GetAsync(url);
+
+            if (!commentsResult.IsSuccessStatusCode)
+            {
+                await HandleErrorAsync(commentsResult);
+            }
+
+            return await commentsResult.Content.ReadFromJsonAsync<CommentsModel>();
+        }
+
         public async Task<bool> VerifyCodeAsync(string validationCode)
         {
             var verifyCodeResult = await _httpClient.GetAsync($"VerifyCode?validationCode={validationCode}");

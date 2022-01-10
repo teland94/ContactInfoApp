@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -32,6 +33,7 @@ namespace ContactInfoApp.UI.Pages
         private string _phoneNumber;
         private ContactModel _contact;
         private IEnumerable<string> _tags;
+        private IEnumerable<CommentModel> _comments;
 
         private RadzenTextBox _textBox;
 
@@ -78,10 +80,15 @@ namespace ContactInfoApp.UI.Pages
         {
             var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
             _tags = Enumerable.Empty<string>();
+            _comments = Enumerable.Empty<CommentModel>();
             var contactId = await ProcessSearch(trimmedPhoneNumber);
             if (contactId != null && !_contact.LimitedResult && _contact.TagCount > 0)
             {
                 await ProcessNumberDetail(trimmedPhoneNumber);
+            }
+            if (_contact.CommentCount > 0)
+            {
+                await ProcessComments(trimmedPhoneNumber);
             }
         }
 
@@ -99,24 +106,7 @@ namespace ContactInfoApp.UI.Pages
             }
             catch (ContactRequestException ex)
             {
-                var errorResult = ex.ErrorResult;
-                if (errorResult == null)
-                {
-                    var errorMessage = ex.StatusCode switch
-                    {
-                        HttpStatusCode.NotFound => "Контакт не найден",
-                        _ => ex.Message
-                    };
-                    NotificationService.Notify(NotificationSeverity.Error, errorMessage, duration: 5000);
-                }
-                if (ex.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    var isVerifiedCode = await VerifyCode(errorResult.Image);
-                    if (isVerifiedCode)
-                    {
-                        await ProcessSearch(phoneNumber);
-                    }
-                }
+                await HandleRequestException(phoneNumber, ex, "Контакт не найден");
 
                 return null;
             }
@@ -137,29 +127,54 @@ namespace ContactInfoApp.UI.Pages
             }
             catch (ContactRequestException ex)
             {
-                var errorResult = ex.ErrorResult;
-                if (errorResult == null)
-                {
-                    var errorMessage = ex.StatusCode switch
-                    {
-                        HttpStatusCode.NotFound => "Теги не найдены",
-                        _ => ex.Message
-                    };
-                    NotificationService.Notify(NotificationSeverity.Error, errorMessage, duration: 5000);
-                    return;
-                }
-                if (ex.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    var isVerifiedCode = await VerifyCode(errorResult.Image);
-                    if (isVerifiedCode)
-                    {
-                        await ProcessNumberDetail(phoneNumber);
-                    }
-                }
+                await HandleRequestException(phoneNumber, ex, "Теги не найдены");
             }
             finally
             {
                 _isLoading = false;
+            }
+        }
+
+        private async Task ProcessComments(string phoneNumber)
+        {
+            try
+            {
+                _isLoading = true;
+
+                var commentsResponse = await ContactHttpClient.GetComments(phoneNumber, _contact.Id);
+                _comments = commentsResponse.Comments;
+            }
+            catch (ContactRequestException ex)
+            {
+                await HandleRequestException(phoneNumber, ex, "Комментарии не найдены");
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+
+        private async Task HandleRequestException(string phoneNumber, ContactRequestException ex, string message)
+        {
+            var errorResult = ex.ErrorResult;
+            if (errorResult == null)
+            {
+                var errorMessage = ex.StatusCode switch
+                {
+                    HttpStatusCode.NotFound => message,
+                    _ => ex.Message
+                };
+                NotificationService.Notify(NotificationSeverity.Error, errorMessage, duration: 5000);
+                return;
+            }
+
+            if (ex.StatusCode == HttpStatusCode.Forbidden)
+            {
+                var isVerifiedCode = await VerifyCode(errorResult.Image);
+                if (isVerifiedCode)
+                {
+                    await ProcessNumberDetail(phoneNumber);
+                }
             }
         }
 

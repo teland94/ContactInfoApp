@@ -1,4 +1,7 @@
-﻿namespace ContactInfoApp.Shared.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace ContactInfoApp.Shared.Models
 {
     public class ContactModel
     {
@@ -13,5 +16,7 @@
         public bool LimitedResult { get; set; }
 
         public int? TagCount { get; set; }
+
+        public int CommentCount { get; set; }
     }
 }

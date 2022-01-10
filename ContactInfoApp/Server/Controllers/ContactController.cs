@@ -39,7 +39,7 @@ namespace ContactInfoApp.Server.Controllers
             {
                 var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, CancellationToken.None, GetContactSettings.CountryCode);
+                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, GetContactSettings.CountryCode);
                 var phoneInfoResponse = phoneInfo.Response;
 
                 var profile = phoneInfoResponse.Profile;
@@ -49,7 +49,8 @@ namespace ContactInfoApp.Server.Controllers
                     DisplayName = profile.DisplayName,
                     IsSpam = phoneInfoResponse.SpamInfo.Degree != "none",
                     LimitedResult = phoneInfoResponse.LimitedResult,
-                    TagCount = profile.TagCount
+                    TagCount = profile.TagCount,
+                    CommentCount = phoneInfoResponse.Comments.CommentCount
                 };
 
                 contact.Id = await AddSearchContactToHistoryAsync(contact, remoteIpAddress);
@@ -67,7 +68,7 @@ namespace ContactInfoApp.Server.Controllers
         {
             try
             {
-                var tagsInfo = await Api.GetTagsAsync(phoneNumber, CancellationToken.None, GetContactSettings.CountryCode);
+                var tagsInfo = await Api.GetTagsAsync(phoneNumber, GetContactSettings.CountryCode);
 
                 var tags = tagsInfo.Response.Tags.Select(t => t.Tag).ToList();
 
@@ -87,12 +88,45 @@ namespace ContactInfoApp.Server.Controllers
             }
         }
 
+        [HttpGet(nameof(Comments))]
+        public async Task<ActionResult<CommentsModel>> Comments(string phoneNumber, int? contactId = null)
+        {
+            try
+            {
+                var commentsInfo = await Api.GetCommentsAsync(phoneNumber);
+
+                var comments = commentsInfo.Response.Comments.Select(c => new CommentModel
+                {
+                    Author = c.Author,
+                    AuthorImage = c.AuthorImage,
+                    Body = c.Body,
+                    Liked = c.Liked,
+                    Disliked = c.Disliked,
+                    Date = c.Date
+                }).ToList();
+
+                //if (contactId != null)
+                //{
+                //    await UpdateSearchContactHistoryAsync(contactId.Value, tags);
+                //}
+
+                return new CommentsModel
+                {
+                    Comments = comments
+                };
+            }
+            catch (GetContactRequestException ex)
+            {
+                return StatusCode((int)ex.StatusCode, ex.ErrorInfo.Response);
+            }
+        }
+
         [HttpGet(nameof(VerifyCode))]
         public async Task<ActionResult> VerifyCode(string validationCode)
         {
             try
             {
-                await Api.SendValidationCodeAsync(validationCode, CancellationToken.None);
+                await Api.SendValidationCodeAsync(validationCode);
 
                 return Ok();
             }

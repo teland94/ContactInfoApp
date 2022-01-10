@@ -22,7 +22,6 @@ namespace ContactInfoApp.Client
 
             var services = builder.Services;
 
-            services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             services.AddHttpClient<ContactHttpClient>(client =>
                 client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/contact/"));
             services.AddHttpClient<ComputerVisionHttpClient>(client =>
