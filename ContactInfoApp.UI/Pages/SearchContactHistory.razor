@@ -21,14 +21,16 @@
     <div class="col-xl-7 col-md-6 col-sm-12 mb-2">
         <RadzenButton Click="ToggleSelectionModeClick" Icon="table_rows" ButtonStyle="_selectionMode == DataGridSelectionMode.Single ? ButtonStyle.Light : ButtonStyle.Info"
                       Disabled="_searchContactHistoryItems == null" />
-        <RadzenButton Click="DeleteSearchContactItemClick" Icon="delete" ButtonStyle="ButtonStyle.Danger" Disabled="_selectedSearchContactHistoryItems == null" />
+        <RadzenButton Click="ShowSearchContactItemCommentsClick" Icon="contacts" ButtonStyle="ButtonStyle.Secondary"
+                      Disabled="_selectedSearchContactHistoryItemsList is not { Count: 1 } || !_selectedSearchContactHistoryItemsList[0].HasComments" />
+        <RadzenButton Click="DeleteSearchContactItemClick" Icon="delete" ButtonStyle="ButtonStyle.Danger" Disabled="_selectedSearchContactHistoryItemsList == null || !_selectedSearchContactHistoryItemsList.Any()" />
     </div>
 </div>
 
 @if (_searchContactHistoryItems != null)
 {
     <RadzenGrid Data="_searchContactHistoryItems" TItem="SearchContactHistoryViewModel" ExpandMode="DataGridExpandMode.Multiple"
-                SelectionMode="_selectionMode" @bind-Value="_selectedSearchContactHistoryItems"
+                SelectionMode="_selectionMode" Value="_selectedSearchContactHistoryItems" ValueChanged="ValueChanged"
                 RowRender="RowRender" RowClick="args => StateHasChanged()" Responsive="false"
                 AllowPaging="true" PageSize="15" AllowColumnResize="true" @ref="_radzenGrid">
         <Template Context="data">

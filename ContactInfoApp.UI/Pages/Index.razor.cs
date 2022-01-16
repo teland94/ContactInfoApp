@@ -10,6 +10,7 @@ using ContactInfoApp.UI.Dialogs;
 using ContactInfoApp.UI.Exceptions;
 using ContactInfoApp.UI.HttpClients;
 using ContactInfoApp.UI.Interfaces;
+using ContactInfoApp.UI.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Radzen;
@@ -33,7 +34,7 @@ namespace ContactInfoApp.UI.Pages
         private string _phoneNumber;
         private ContactModel _contact;
         private IEnumerable<string> _tags;
-        private IEnumerable<CommentModel> _comments;
+        private IEnumerable<CommentViewModel> _comments;
 
         private RadzenTextBox _textBox;
 
@@ -80,7 +81,7 @@ namespace ContactInfoApp.UI.Pages
         {
             var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
             _tags = Enumerable.Empty<string>();
-            _comments = Enumerable.Empty<CommentModel>();
+            _comments = Enumerable.Empty<CommentViewModel>();
             var contactId = await ProcessSearch(trimmedPhoneNumber);
             if (contactId != null && !_contact.LimitedResult && _contact.TagCount > 0)
             {
@@ -142,7 +143,15 @@ namespace ContactInfoApp.UI.Pages
                 _isLoading = true;
 
                 var commentsResponse = await ContactHttpClient.GetComments(phoneNumber, _contact.Id);
-                _comments = commentsResponse.Comments;
+                _comments = commentsResponse.Comments.Select(c => new CommentViewModel
+                {
+                    Author = c.Author,
+                    AuthorImage = c.AuthorImage,
+                    Body = c.Body,
+                    Liked = c.Liked,
+                    Disliked = c.Disliked,
+                    Date = c.Date
+                });
             }
             catch (ContactRequestException ex)
             {

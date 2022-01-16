@@ -74,7 +74,7 @@ namespace ContactInfoApp.Server.Controllers
 
                 if (contactId != null)
                 {
-                    await UpdateSearchContactHistoryAsync(contactId.Value, tags);
+                    await UpdateSearchContactHistoryTagsAsync(contactId.Value, tags);
                 }
 
                 return new NumberDetailModel
@@ -105,10 +105,10 @@ namespace ContactInfoApp.Server.Controllers
                     Date = c.Date
                 }).ToList();
 
-                //if (contactId != null)
-                //{
-                //    await UpdateSearchContactHistoryAsync(contactId.Value, tags);
-                //}
+                if (contactId != null)
+                {
+                    await UpdateSearchContactHistoryCommentsAsync(contactId.Value, comments);
+                }
 
                 return new CommentsModel
                 {
@@ -136,7 +136,28 @@ namespace ContactInfoApp.Server.Controllers
             }
         }
 
-        private async Task UpdateSearchContactHistoryAsync(int contactId, IEnumerable<string> tags)
+        private async Task UpdateSearchContactHistoryCommentsAsync(int contactId, IEnumerable<CommentModel> comments)
+        {
+            var contact = await DbContext.SearchContactHistory.FindAsync(contactId);
+
+            if (contact != null)
+            {
+                contact.Comments = comments.Select(c => new SearchContactHistoryComment
+                {
+                    Author = c.Author,
+                    AuthorImage = c.AuthorImage,
+                    Body = c.Body,
+                    Liked = c.Liked,
+                    Disliked = c.Disliked,
+                    Date = c.Date
+                }).ToList();
+
+                DbContext.Update(contact);
+                await DbContext.SaveChangesAsync();
+            }
+        }
+
+        private async Task UpdateSearchContactHistoryTagsAsync(int contactId, IEnumerable<string> tags)
         {
             var jsonSerializerOptions = new JsonSerializerOptions
             {
@@ -145,10 +166,13 @@ namespace ContactInfoApp.Server.Controllers
 
             var contact = await DbContext.SearchContactHistory.FindAsync(contactId);
 
-            contact.Tags = JsonSerializer.Serialize(tags, jsonSerializerOptions);
+            if (contact != null)
+            {
+                contact.Tags = JsonSerializer.Serialize(tags, jsonSerializerOptions);
 
-            DbContext.Update(contact);
-            await DbContext.SaveChangesAsync();
+                DbContext.Update(contact);
+                await DbContext.SaveChangesAsync();
+            }
         }
 
         private async Task<int> AddSearchContactToHistoryAsync(ContactModel contact, string ipAddress)

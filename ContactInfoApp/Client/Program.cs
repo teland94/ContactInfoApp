@@ -22,14 +22,17 @@ namespace ContactInfoApp.Client
 
             var services = builder.Services;
 
+            var baseAddress = builder.HostEnvironment.BaseAddress;
             services.AddHttpClient<ContactHttpClient>(client =>
-                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/contact/"));
+                client.BaseAddress = new Uri($"{baseAddress}api/contact/"));
             services.AddHttpClient<ComputerVisionHttpClient>(client =>
-                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/computervision/"));
+                client.BaseAddress = new Uri($"{baseAddress}api/computervision/"));
             services.AddHttpClient<SearchContactHistoryHttpClient>(client =>
-                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/searchcontacthistory/"));
+                client.BaseAddress = new Uri($"{baseAddress}api/searchcontacthistory/"));
+            services.AddHttpClient<SearchContactHistoryCommentHttpClient>(client =>
+                client.BaseAddress = new Uri($"{baseAddress}api/searchcontacthistorycomment/"));
             services.AddHttpClient<SettingsHttpClient>(client =>
-                client.BaseAddress = new Uri($"{builder.HostEnvironment.BaseAddress}api/settings/"));
+                client.BaseAddress = new Uri($"{baseAddress}api/settings/"));
 
             services.AddScoped<NotificationService>();
             services.AddScoped<DialogService>();

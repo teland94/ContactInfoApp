@@ -21,6 +21,8 @@ namespace ContactInfoApp.UI.ViewModels
 
         public int? TagCount { get; set; }
 
+        public bool HasComments { get; set; }
+
         public int DuplicateSequenceNumber { get; set; }
     }
 }

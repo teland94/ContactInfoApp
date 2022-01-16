@@ -21,7 +21,16 @@ namespace ContactInfoApp.UI.HttpClients
 
         public async Task<ContactModel> SearchContactAsync(string phoneNumber)
         {
-            var contactResult = await _httpClient.GetAsync($"Search?phoneNumber={phoneNumber}");
+            var url = "Search";
+            var parameters = new Dictionary<string, string>
+            {
+                { "phoneNumber", phoneNumber }
+            };
+
+            url = UrlHelpers.AddQueryParameters(url, parameters);
+
+            var contactResult = await _httpClient.GetAsync(url);
+
             if (!contactResult.IsSuccessStatusCode)
             {
                 await HandleErrorAsync(contactResult);
@@ -32,7 +41,7 @@ namespace ContactInfoApp.UI.HttpClients
 
         public async Task<NumberDetailModel> GetNumberDetailAsync(string phoneNumber, int? contactId = null)
         {
-            var url = $"{_httpClient.BaseAddress}NumberDetail";
+            var url = "NumberDetail";
             var parameters = new Dictionary<string, string>
             {
                 { "phoneNumber", phoneNumber }
@@ -57,7 +66,7 @@ namespace ContactInfoApp.UI.HttpClients
 
         public async Task<CommentsModel> GetComments(string phoneNumber, int? contactId = null)
         {
-            var url = $"{_httpClient.BaseAddress}Comments";
+            var url = "Comments";
             var parameters = new Dictionary<string, string>
             {
                 { "phoneNumber", phoneNumber }

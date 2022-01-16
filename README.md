@@ -2,10 +2,10 @@
 SPA (Single Page Application) for finding info about user by phone number using GetContact API
 
 ## Used APIs, Frameworks and Libraries
-  * GetContactAPI
-  * ASP.NET Core 5.0 (Web API)
-  * Entity Framework Core 5.0 with SQLite
-  * Blazor WebAssembly 5.0
+  * GetContact API
+  * ASP.NET Core 6.0 (Web API)
+  * Entity Framework Core 6.0 with SQLite
+  * Blazor WebAssembly 6.0
   * Radzen.Blazor
   * Microsoft.Azure.CognitiveServices.Vision.ComputerVision
   * IpStack

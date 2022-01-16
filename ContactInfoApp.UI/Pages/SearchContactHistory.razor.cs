@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ContactInfoApp.UI.Dialogs;
 using ContactInfoApp.UI.HttpClients;
 using ContactInfoApp.UI.Interfaces;
 using ContactInfoApp.UI.ViewModels;
@@ -15,6 +16,8 @@ namespace ContactInfoApp.UI.Pages
     public partial class SearchContactHistory : ComponentBase
     {
         [Inject] private SearchContactHistoryHttpClient SearchContactHistoryHttpClient { get; set; }
+        [Inject] private SearchContactHistoryCommentHttpClient SearchContactHistoryCommentHttpClient { get; set; }
+
         [Inject] private ISettingsService SettingsService { get; set; }
         [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -28,6 +31,7 @@ namespace ContactInfoApp.UI.Pages
         private string _searchQuery;
         private DataGridSelectionMode _selectionMode = DataGridSelectionMode.Single;
         private object _selectedSearchContactHistoryItems;
+        private IList<SearchContactHistoryViewModel> _selectedSearchContactHistoryItemsList;
 
         private RadzenTextBox _textBox;
         private RadzenGrid<SearchContactHistoryViewModel> _radzenGrid;
@@ -55,7 +59,8 @@ namespace ContactInfoApp.UI.Pages
                 DisplayName = sch.DisplayName,
                 IsSpam = sch.IsSpam,
                 Tags = sch.Tags,
-                TagCount = sch.TagCount
+                TagCount = sch.TagCount,
+                HasComments = sch.HasComments
             }).ToList();
 
             CalculateSearchContactHistoryItemsProperties();
@@ -68,6 +73,12 @@ namespace ContactInfoApp.UI.Pages
             args.Expandable = args.Data.Tags != null && args.Data.Tags.Any();
         }
 
+        private void ValueChanged(object searchContactHistoryItems)
+        {
+            _selectedSearchContactHistoryItemsList = GetSelectedItems(searchContactHistoryItems);
+            _selectedSearchContactHistoryItems = searchContactHistoryItems;
+        }
+
         private void SearchChange(string value)
         {
             _searchQuery = value;
@@ -77,19 +88,25 @@ namespace ContactInfoApp.UI.Pages
         private void ToggleSelectionModeClick(MouseEventArgs e)
         {
             _selectionMode = _selectionMode == DataGridSelectionMode.Single ? DataGridSelectionMode.Multiple : DataGridSelectionMode.Single;
-            if (_selectedSearchContactHistoryItems == null) { return; }
-            _selectedSearchContactHistoryItems = _selectionMode == DataGridSelectionMode.Multiple ? new[] { (SearchContactHistoryViewModel)_selectedSearchContactHistoryItems } : null;
+            if (_selectedSearchContactHistoryItemsList == null) { return; }
+            if (_selectionMode == DataGridSelectionMode.Multiple)
+            {
+                _selectedSearchContactHistoryItems = _selectedSearchContactHistoryItemsList.FirstOrDefault();
+            }
+            else
+            {
+                ClearSelection();
+            }
         }
 
         private async Task DeleteSearchContactItemClick(MouseEventArgs e)
         {
-            if (_selectedSearchContactHistoryItems == null) { return; }
+            if (_selectedSearchContactHistoryItemsList == null) { return; }
 
-            var selectedContactHistoryItems = GetSelectedItems(_selectedSearchContactHistoryItems);
             string confirmMessage;
-            if (selectedContactHistoryItems.Count == 1)
+            if (_selectedSearchContactHistoryItemsList.Count == 1)
             {
-                var selectedContactHistoryItem = selectedContactHistoryItems.First();
+                var selectedContactHistoryItem = _selectedSearchContactHistoryItemsList.First();
                 confirmMessage = $"Вы действительно хотите удалить запись: {selectedContactHistoryItem.DisplayName} - {selectedContactHistoryItem.PhoneNumber}?";
             }
             else
@@ -100,14 +117,36 @@ namespace ContactInfoApp.UI.Pages
             var confirmResult = await DialogService.Confirm(confirmMessage, "Удаление", new ConfirmOptions { OkButtonText = "Да", CancelButtonText = "Нет" });
             if (confirmResult.HasValue && confirmResult.Value)
             {
-                foreach (var selectedContactHistoryItem in selectedContactHistoryItems)
+                foreach (var selectedContactHistoryItem in _selectedSearchContactHistoryItemsList)
                 {
                     await SearchContactHistoryHttpClient.DeleteAsync(selectedContactHistoryItem.Id);
                 }
-                _searchContactHistoryRawViewItems = _searchContactHistoryRawViewItems.Where(schr => selectedContactHistoryItems.All(sch => sch.Id != schr.Id));
+                _searchContactHistoryRawViewItems = _searchContactHistoryRawViewItems.Where(schr => _selectedSearchContactHistoryItemsList.All(sch => sch.Id != schr.Id)).ToList();
                 CalculateSearchContactHistoryItemsProperties();
                 CheckSearchContactHistoryFilter();
                 ClearSelection();
+            }
+        }
+
+        private async Task ShowSearchContactItemCommentsClick(MouseEventArgs e)
+        {
+            var contactHistoryItem = _selectedSearchContactHistoryItemsList?.SingleOrDefault();
+            if (contactHistoryItem != null)
+            {
+                var contactHistoryCommentItems = await SearchContactHistoryCommentHttpClient.GetBySearchContactHistoryId(contactHistoryItem.Id);
+                var comments = contactHistoryCommentItems.Select(c => new CommentViewModel
+                {
+                    Author = c.Author,
+                    AuthorImage = c.AuthorImage,
+                    Body = c.Body,
+                    Liked = c.Liked,
+                    Disliked = c.Disliked,
+                    Date = c.Date,
+                });
+                await DialogService.OpenAsync<ContactCommentsDialog>("Комментарии", new Dictionary<string, object>
+                {
+                    { "Comments", comments }
+                });
             }
         }
 
@@ -139,8 +178,8 @@ namespace ContactInfoApp.UI.Pages
 
         private void ClearSelection()
         {
+            _selectedSearchContactHistoryItemsList = null;
             _selectedSearchContactHistoryItems = null;
-            _radzenGrid.SelectRow(null);
         }
 
         private static IList<SearchContactHistoryViewModel> GetSelectedItems(object selectedSearchContactHistoryItems)

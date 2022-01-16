@@ -1,0 +1,18 @@
+﻿@using ContactInfoApp.UI.ViewModels
+@using ContactInfoApp.UI.Components
+
+@inject DialogService DialogService
+
+<div class="mb-2">
+    <ContactComments Comments="Comments"></ContactComments>
+</div>
+<div class="row justify-content-end">
+    <div class="col-auto">
+        <RadzenButton Click="args => DialogService.Close()" ButtonStyle="ButtonStyle.Primary" Text="Ok" />
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<CommentViewModel> Comments { get; set; }
+}

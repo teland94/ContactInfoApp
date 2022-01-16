@@ -39,6 +39,8 @@ namespace ContactInfoApp.Mobile
                 client.BaseAddress = new Uri($"{baseAddress}api/computervision/"));
             services.AddHttpClient<SearchContactHistoryHttpClient>(client =>
                 client.BaseAddress = new Uri($"{baseAddress}api/searchcontacthistory/"));
+            services.AddHttpClient<SearchContactHistoryCommentHttpClient>(client =>
+                client.BaseAddress = new Uri($"{baseAddress}api/searchcontacthistorycomment/"));
             services.AddHttpClient<SettingsHttpClient>(client =>
                 client.BaseAddress = new Uri($"{baseAddress}api/settings/"));
 

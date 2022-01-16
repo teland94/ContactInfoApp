@@ -14,8 +14,8 @@ namespace ContactInfoApp.Shared.Helpers
                 q[key] = value;
             }
             uriBuilder.Query = q.ToString() ?? string.Empty;
-            var newUrl = uriBuilder.ToString();
-            return newUrl;
+
+            return $"{uriBuilder.Host}{uriBuilder.Path}{uriBuilder.Query}";
         }
 
         public static string GetQueryParameter(string url, string paramName)
