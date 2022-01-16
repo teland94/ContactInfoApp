@@ -12,5 +12,5 @@ SPA (Single Page Application) for finding info about user by phone number using 
   
 ## Main Page
 <p align="center">
- <img src="https://d.radikal.ru/d10/2105/a1/c5bb4490b53c.png" alt="Main Page" />
+ <img src="https://raw.githubusercontent.com/teland94/ContactInfoApp/master/c5bb4490b53c.png" alt="Main Page" />
 </p>
