@@ -10,11 +10,15 @@
                 <div class="col">
                     <div class="row">
                         <div class="col pl-2">
-                            <div><span class="font-weight-bold small">@comment.Author</span></div>
-                            <div>@comment.Body</div>
+                            <span class="font-weight-bold small">@comment.Author</span>
                         </div>
                         <div class="col-auto">
                             <span class="text-secondary small">@comment.Date.ToString("dd MMMM yyyy")</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col pl-2">
+                            @comment.Body
                         </div>
                     </div>
                     <div class="row">
@@ -23,7 +27,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col d-flex justify-content-end">
+                        <div class="col pl-2 d-flex justify-content-end">
                             <div class="icon-item">
                                 <span class="icon-item"><RadzenIcon Icon="thumb_up"/></span>
                                 <span class="ml-1">@comment.Liked</span>

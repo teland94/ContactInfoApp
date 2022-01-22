@@ -107,7 +107,11 @@ namespace ContactInfoApp.UI.Pages
             }
             catch (ContactRequestException ex)
             {
-                await HandleRequestException(phoneNumber, ex, "Контакт не найден");
+                var success = await HandleRequestException(phoneNumber, ex, "Контакт не найден");
+                if (success != null && !success.Value)
+                {
+                    await ProcessSearch(phoneNumber);
+                }
 
                 return null;
             }
@@ -128,7 +132,11 @@ namespace ContactInfoApp.UI.Pages
             }
             catch (ContactRequestException ex)
             {
-                await HandleRequestException(phoneNumber, ex, "Теги не найдены");
+                var success = await HandleRequestException(phoneNumber, ex, "Теги не найдены");
+                if (success != null && !success.Value)
+                {
+                    await ProcessNumberDetail(phoneNumber);
+                }
             }
             finally
             {
@@ -155,7 +163,11 @@ namespace ContactInfoApp.UI.Pages
             }
             catch (ContactRequestException ex)
             {
-                await HandleRequestException(phoneNumber, ex, "Комментарии не найдены");
+                var success = await HandleRequestException(phoneNumber, ex, "Комментарии не найдены");
+                if (success != null && !success.Value)
+                {
+                    await ProcessComments(phoneNumber);
+                }
             }
             finally
             {
@@ -163,7 +175,7 @@ namespace ContactInfoApp.UI.Pages
             }
         }
 
-        private async Task HandleRequestException(string phoneNumber, ContactRequestException ex, string message)
+        private async Task<bool?> HandleRequestException(string phoneNumber, ContactRequestException ex, string message)
         {
             var errorResult = ex.ErrorResult;
             if (errorResult == null)
@@ -174,17 +186,15 @@ namespace ContactInfoApp.UI.Pages
                     _ => ex.Message
                 };
                 NotificationService.Notify(NotificationSeverity.Error, errorMessage, duration: 5000);
-                return;
+                return null;
             }
 
             if (ex.StatusCode == HttpStatusCode.Forbidden)
             {
-                var isVerifiedCode = await VerifyCode(errorResult.Image);
-                if (isVerifiedCode)
-                {
-                    await ProcessNumberDetail(phoneNumber);
-                }
+                return await VerifyCode(errorResult.Image);
             }
+
+            return null;
         }
 
         private async Task<bool> VerifyCode(string image)
