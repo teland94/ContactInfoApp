@@ -8,7 +8,7 @@
         <div class="col-auto">
             <div class="input-group">
                 <RadzenTextBox Value=@_phoneNumber Placeholder="Введите номер телефона" @oninput="args => _phoneNumber = args.Value?.ToString()" @ref="_textBox" Style="min-width: 250px;" 
-                               type="tel" />
+                               type="tel" @onkeydown="@Enter" />
                 <div class="input-group-append">
                     <RadzenButton Click="async args => { _phoneNumber = null; await _textBox.Element.FocusAsync(); }" Icon="clear" ButtonStyle="ButtonStyle.Light" />
                 </div>

@@ -77,19 +77,33 @@ namespace ContactInfoApp.UI.Pages
             NotificationService.Notify(NotificationSeverity.Info, "Ссылка успешно скопирована");
         }
 
+        private async Task Enter(KeyboardEventArgs e)
+        {
+            if (e.Code is "Enter" or "NumpadEnter")
+            {
+                await Process();
+            }
+        }
+
         private async Task Process()
         {
             var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
+
+            _contact = null;
             _tags = Enumerable.Empty<string>();
             _comments = Enumerable.Empty<CommentViewModel>();
+            
             var contactId = await ProcessSearch(trimmedPhoneNumber);
-            if (contactId != null && !_contact.LimitedResult && _contact.TagCount > 0)
+            if (contactId != null)
             {
-                await ProcessNumberDetail(trimmedPhoneNumber);
-            }
-            if (_contact.CommentCount > 0)
-            {
-                await ProcessComments(trimmedPhoneNumber);
+                if (!_contact.LimitedResult && _contact.TagCount > 0)
+                {
+                    await ProcessNumberDetail(trimmedPhoneNumber);
+                }
+                if (_contact.CommentCount > 0)
+                {
+                    await ProcessComments(trimmedPhoneNumber);
+                }
             }
         }
 
