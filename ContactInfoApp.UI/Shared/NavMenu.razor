@@ -1,0 +1,64 @@
+﻿@using Blazored.LocalStorage
+@using ContactInfoApp.UI.Interfaces
+
+<div class="top-row pl-4 navbar navbar-dark">
+    @if (!IsBrowser)
+    {
+        <RadzenButton Click='async (e) => await JsRuntime.InvokeVoidAsync("back")' Icon="arrow_back"></RadzenButton>
+    }
+    <a class="navbar-brand" href="">Contact Info</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="/home">
+                <RadzenIcon Icon="home"></RadzenIcon>&nbsp;Главная
+            </NavLink>
+        </li>
+        @if (_searchContactHistoryPageMenuVisible)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/search-contact-history">
+                    <RadzenIcon Icon="history"></RadzenIcon>&nbsp;История поиска
+                </NavLink>
+            </li>
+        }
+        @if (IsAndroid)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="/phone-contacts">
+                    <RadzenIcon Icon="contacts"></RadzenIcon>&nbsp;Недавние вызовы
+                </NavLink>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    private bool _searchContactHistoryPageMenuVisible;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private bool IsAndroid => OperatingSystem.IsAndroid();
+    private bool IsBrowser => OperatingSystem.IsBrowser();
+
+    [Inject] private ISettingsService SettingsService { get; set; }
+
+    [Inject] private IJSRuntime JsRuntime { get; set; }
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uiSettings = await SettingsService.GetUiSettingsAsync();
+        _searchContactHistoryPageMenuVisible = uiSettings.SearchContactHistoryPageMenuVisible;
+    }
+}

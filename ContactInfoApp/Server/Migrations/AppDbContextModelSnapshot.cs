@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
+#nullable disable
+
 namespace ContactInfoApp.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
@@ -13,8 +15,7 @@ namespace ContactInfoApp.Server.Migrations
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.0");
 
             modelBuilder.Entity("ContactInfoApp.Server.Persistence.Entities.SearchContactHistory", b =>
                 {
@@ -48,6 +49,57 @@ namespace ContactInfoApp.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SearchContactHistory");
+                });
+
+            modelBuilder.Entity("ContactInfoApp.Server.Persistence.Entities.SearchContactHistoryComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Author")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AuthorImage")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Disliked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Liked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SearchContactHistoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SearchContactHistoryId");
+
+                    b.ToTable("SearchContactHistoryComments");
+                });
+
+            modelBuilder.Entity("ContactInfoApp.Server.Persistence.Entities.SearchContactHistoryComment", b =>
+                {
+                    b.HasOne("ContactInfoApp.Server.Persistence.Entities.SearchContactHistory", "SearchContactHistory")
+                        .WithMany("Comments")
+                        .HasForeignKey("SearchContactHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SearchContactHistory");
+                });
+
+            modelBuilder.Entity("ContactInfoApp.Server.Persistence.Entities.SearchContactHistory", b =>
+                {
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,7 +7,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ContactInfoApp.Shared.Models;
+using ContactInfoApp.Shared.Request;
 
 namespace ContactInfoApp.Server.Controllers
 {

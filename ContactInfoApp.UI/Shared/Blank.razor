@@ -1,0 +1,10 @@
+﻿@page "/"
+
+@code {
+    [Inject] public NavigationManager NavigationManager { get; set; }
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo(OperatingSystem.IsAndroid() ? "/phone-contacts" : "/home");
+    }
+}

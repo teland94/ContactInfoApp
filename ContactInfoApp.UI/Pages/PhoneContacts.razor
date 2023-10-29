@@ -1,0 +1,137 @@
+﻿@page "/phone-contacts"
+@using ContactInfoApp.UI.Model
+@using ContactInfoApp.UI.Interfaces
+@using ContactInfoApp.UI.ViewModels
+@using ContactInfoApp.UI.HttpClients
+@using ContactInfoApp.Shared.Models
+@using ContactInfoApp.Shared.Request
+
+<h3>Недавние вызовы</h3>
+
+@if (_groupedCallLogs != null)
+{
+    foreach (var groupedCallLog in _groupedCallLogs)
+    {
+        <h6 class="mt-1">@groupedCallLog.Date.ToLongDateString()</h6>
+        <RadzenDataList Data="@groupedCallLog.CallLogs" TItem="GroupedPhoneNumberViewModel">
+            <Template Context="groupedPhoneNumber">
+                @{
+                    var callLog = groupedPhoneNumber.CallLog;
+                }
+                <div class="container pr-0">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <span class="@(groupedPhoneNumber.IsModifiedByContactHistory ? "text-info" : "")">
+                                    @if (!string.IsNullOrEmpty(callLog.CallName))
+                                    {
+                                        @callLog.CallName
+                                    }
+                                    else
+                                    {
+                                        @callLog.CallNumber
+                                    }
+                                    @if (groupedPhoneNumber.Count > 1)
+                                    {
+                                        @($" ({groupedPhoneNumber.Count})")
+                                    }
+                                </span>
+                            </div>
+                            <div class="row">
+                                @switch (callLog.CallType)
+                                {
+                                    case CallType.Outgoing:
+                                        <RadzenIcon Icon="call_made"></RadzenIcon>
+                                        break;
+                                    case CallType.Incoming:
+                                        <RadzenIcon Icon="call_received"></RadzenIcon>
+                                        break;
+                                    case CallType.Missed:
+                                    case CallType.Rejected:
+                                        <RadzenIcon Icon="call_missed" class="text-warning"></RadzenIcon>
+                                        break;
+                                    case CallType.Blocked:
+                                        <RadzenIcon Icon="block" class="text-danger"></RadzenIcon>
+                                        break;
+                                }
+                                <span class="@(callLog.CallType == CallType.Missed ? "text-warning" : "")">&nbsp;&bull; @callLog.CallDate.ToString("ddd, HH:mm")</span>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex">
+                            <div class="align-self-center">
+                                <RadzenButton Click="args => GetContactInfoClick(args, callLog)" Icon="info"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Template>
+        </RadzenDataList>
+    }
+}
+else
+{
+    <div class="spinner"></div>
+}
+
+@code {
+    private IEnumerable<GroupedCallLogViewModel> _groupedCallLogs;
+
+    [Inject] private NavigationManager NavigationManager { get; set; }
+
+    [Inject] private ICallLogService CallLogService { get; set; }
+
+    [Inject] private SearchContactHistoryHttpClient SearchContactHistoryHttpClient { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var callLogs = CallLogService.GetCallLogs().ToList();
+
+        foreach (var callLog in callLogs)
+        {
+            callLog.CallDate = callLog.CallDate.ToLocalTime();
+        }
+
+        var historyPhoneNumbers = await SearchContactHistoryHttpClient.GetPhoneNumbersInfoAsync(new ContactHistoryPhoneNumberInfoRequestModel
+        {
+            PhoneNumbers = callLogs.Select(x => x.CallNumber).Distinct()
+        });
+
+        _groupedCallLogs = GetGroupedCallLogs(callLogs, historyPhoneNumbers);
+    }
+
+    private IEnumerable<GroupedCallLogViewModel> GetGroupedCallLogs(IEnumerable<CallLogModel> callLogs, IEnumerable<ContactHistoryPhoneNumberInfoModel> historyPhoneNumbers)
+    {
+        return callLogs
+            .GroupBy(g => g.CallDate.Date)
+            .Select(x => new GroupedCallLogViewModel
+            {
+                Date = x.Key,
+                CallLogs = x
+                    .GroupBy(g => g.CallNumber)
+                    .Select(xx =>
+                    {
+                        var callLog = xx.First();
+
+                        var isModifiedByContactHistory = false;
+                        var historyPhoneNumber = historyPhoneNumbers.FirstOrDefault(p => p.PhoneNumber == callLog.CallNumber);
+                        if (historyPhoneNumber != null)
+                        {
+                            callLog.CallName = historyPhoneNumber.DisplayName;
+                            isModifiedByContactHistory = true;
+                        }
+
+                        return new GroupedPhoneNumberViewModel
+                        {
+                            Count = xx.Count(),
+                            CallLog = callLog,
+                            IsModifiedByContactHistory = isModifiedByContactHistory
+                        };
+                    })
+            });
+    }
+
+    private void GetContactInfoClick(MouseEventArgs e, CallLogModel callLog)
+    {
+        NavigationManager.NavigateTo($"/home/{callLog.CallNumber}");
+    }
+}

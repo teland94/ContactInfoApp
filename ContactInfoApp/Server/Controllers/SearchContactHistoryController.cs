@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ContactInfoApp.Server.Persistence;
 using ContactInfoApp.Shared.Models;
+using ContactInfoApp.Shared.Request;
 using Microsoft.EntityFrameworkCore;
 
 namespace ContactInfoApp.Server.Controllers
@@ -23,10 +24,22 @@ namespace ContactInfoApp.Server.Controllers
         [HttpGet]
         public async Task<IEnumerable<SearchContactHistoryModel>> Get()
         {
-            var searchContactHistoryItems = await DbContext.SearchContactHistory
+            var searchContactHistoryDbItems = await DbContext.SearchContactHistory
                 .OrderByDescending(sch => sch.Date)
-                .ToListAsync();
-            return searchContactHistoryItems.Select(sch => new SearchContactHistoryModel
+                .Select(sch => new
+                {
+                    Id = sch.Id,
+                    Date = sch.Date,
+                    IpAddress = sch.IpAddress,
+                    PhoneNumber = sch.PhoneNumber,
+                    DisplayName = sch.DisplayName,
+                    IsSpam = sch.IsSpam,
+                    Tags = sch.Tags,
+                    TagCount = sch.TagCount,
+                    HasComments = sch.Comments.Any()
+                }).ToListAsync();
+
+            return searchContactHistoryDbItems.Select(sch => new SearchContactHistoryModel
             {
                 Id = sch.Id,
                 Date = sch.Date,
@@ -35,8 +48,26 @@ namespace ContactInfoApp.Server.Controllers
                 DisplayName = sch.DisplayName,
                 IsSpam = sch.IsSpam,
                 Tags = sch.Tags != null ? JsonSerializer.Deserialize<IEnumerable<string>>(sch.Tags) : null,
-                TagCount = sch.TagCount
+                TagCount = sch.TagCount,
+                HasComments = sch.HasComments
             });
+        }
+
+        [HttpPost(nameof(GetPhoneNumbersInfo))]
+        public Task<List<ContactHistoryPhoneNumberInfoModel>> GetPhoneNumbersInfo(ContactHistoryPhoneNumberInfoRequestModel model)
+        {
+            return DbContext.SearchContactHistory
+                .Where(sch => model.PhoneNumbers.Any(p => p == sch.PhoneNumber))
+                .OrderByDescending(sch => sch.Date)
+                .Select(sch => new ContactHistoryPhoneNumberInfoModel
+                {
+                    PhoneNumber = sch.PhoneNumber,
+                    DisplayName = sch.DisplayName,
+                    IsSpam = sch.IsSpam
+                })
+                .GroupBy(sch => sch.PhoneNumber)
+                .Select(x => x.FirstOrDefault())
+                .ToListAsync();
         }
 
         [HttpDelete("{id}")]

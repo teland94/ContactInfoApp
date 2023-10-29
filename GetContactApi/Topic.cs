@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -29,7 +30,7 @@ namespace GetContactAPI
             };
         }
 
-        public async Task CreateValidationTopicAsync(string url, string validationCode, CancellationToken ct)
+        public async Task CreateValidationTopicAsync(string url, string validationCode, CancellationToken ct = default)
         {
             var reqObj = new
             {
@@ -44,20 +45,23 @@ namespace GetContactAPI
         /// Формирование зашифрованного запроса
         /// </summary>
         /// <returns>Получение дешифрованного запроса в формате json</returns>
-        public async Task<ApiResponse<T>> CreateTopicAsync<T>(string url, string source, string phone, string countryCode, CancellationToken ct)
+        public async Task<ApiResponse<T>> CreateTopicAsync<T>(string url, string source, string phone, string countryCode = null, CancellationToken cancellationToken = default)
         {
-            var reqObj = new
-            {
-                countryCode = countryCode ?? "RU",
-                phoneNumber = phone,
-                source,
-                token = _data.Token,
-            };
+            dynamic reqObj = new ExpandoObject();
 
-            return await SendRequestAsync<T>(url, reqObj, ct);
+            reqObj.phoneNumber = phone;
+            reqObj.source = source;
+            reqObj.token = _data.Token;
+
+            if (countryCode != null)
+            {
+                reqObj.countryCode = countryCode;
+            }
+
+            return await SendRequestAsync<T>(url, reqObj, cancellationToken);
         }
 
-        private Task<ApiResponse<T>> SendRequestAsync<T>(string url, object reqObj, CancellationToken ct)
+        private Task<ApiResponse<T>> SendRequestAsync<T>(string url, object reqObj, CancellationToken cancellationToken = default)
         {
             string timestamp = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
 
@@ -65,13 +69,13 @@ namespace GetContactAPI
             string signature = Cryptography.EncryptToSHA256(timestamp.Replace("\r\n", "") + "-" + req, _data.Key); // signature
             string crypt = Cryptography.EncryptAes256ECB(req, _data.AesKey);
 
-            return SendDataAsync<T>(url, "{\"data\":\"" + crypt + "\"}", timestamp, signature, ct);
+            return SendDataAsync<T>(url, "{\"data\":\"" + crypt + "\"}", timestamp, signature, cancellationToken);
         }
 
         /// <summary>
         /// Отправка готового запроса на сервер, с последующей дешифровкой
         /// </summary>
-        private async Task<ApiResponse<T>> SendDataAsync<T>(string url, string data, string timestamp, string signature, CancellationToken ct)
+        private async Task<ApiResponse<T>> SendDataAsync<T>(string url, string data, string timestamp, string signature, CancellationToken cancellationToken = default)
         {
             using HttpClient client = new();
             using HttpRequestMessage request = new(HttpMethod.Post, url);
@@ -87,10 +91,10 @@ namespace GetContactAPI
             request.Headers.Add("X-Req-Signature", signature);
             request.Headers.Add("X-Encrypted", "1");
 
-            using HttpResponseMessage response = await client.SendAsync(request, ct).ConfigureAwait(false);
+            using HttpResponseMessage response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-            using Stream content = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using JsonDocument rawResponse = await JsonDocument.ParseAsync(content, cancellationToken: ct).ConfigureAwait(false);
+            using Stream content = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            using JsonDocument rawResponse = await JsonDocument.ParseAsync(content, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (!rawResponse.RootElement.TryGetProperty("data", out JsonElement rawData))
                 throw new ApplicationException("Failed to get \"data\" from response!");

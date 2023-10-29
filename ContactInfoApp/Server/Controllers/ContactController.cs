@@ -11,7 +11,6 @@ using System.Text.Json;
 using ContactInfoApp.Server.Configuration;
 using ContactInfoApp.Server.Persistence;
 using ContactInfoApp.Shared.Models;
-using IpStack;
 using Microsoft.Extensions.Options;
 
 namespace ContactInfoApp.Server.Controllers
@@ -23,17 +22,14 @@ namespace ContactInfoApp.Server.Controllers
         private GetContact Api { get; }
         private GetContactSettings GetContactSettings { get; }
         private AppDbContext DbContext { get; }
-        private IpStackClient IpStackClient { get; }
 
         public ContactController(GetContact getContact,
             IOptions<GetContactSettings> getContactSettingsAccessor,
-            AppDbContext dbContext,
-            IpStackClient ipStackClient)
+            AppDbContext dbContext)
         {
             Api = getContact;
             GetContactSettings = getContactSettingsAccessor.Value;
             DbContext = dbContext;
-            IpStackClient = ipStackClient;
         }
 
         [HttpGet(nameof(Search))]
@@ -43,9 +39,7 @@ namespace ContactInfoApp.Server.Controllers
             {
                 var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-                var countryCode = await GetRequestCountryCodeAsync();
-
-                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, CancellationToken.None, countryCode);
+                var phoneInfo = await Api.GetByPhoneAsync(phoneNumber, GetContactSettings.CountryCode);
                 var phoneInfoResponse = phoneInfo.Response;
 
                 var profile = phoneInfoResponse.Profile;
@@ -55,7 +49,8 @@ namespace ContactInfoApp.Server.Controllers
                     DisplayName = profile.DisplayName,
                     IsSpam = phoneInfoResponse.SpamInfo.Degree != "none",
                     LimitedResult = phoneInfoResponse.LimitedResult,
-                    TagCount = profile.TagCount
+                    TagCount = profile.TagCount,
+                    CommentCount = phoneInfoResponse.Comments.CommentCount
                 };
 
                 contact.Id = await AddSearchContactToHistoryAsync(contact, remoteIpAddress);
@@ -73,15 +68,13 @@ namespace ContactInfoApp.Server.Controllers
         {
             try
             {
-                var countryCode = await GetRequestCountryCodeAsync();
-
-                var tagsInfo = await Api.GetTagsAsync(phoneNumber, CancellationToken.None, countryCode);
+                var tagsInfo = await Api.GetTagsAsync(phoneNumber, GetContactSettings.CountryCode);
 
                 var tags = tagsInfo.Response.Tags.Select(t => t.Tag).ToList();
 
                 if (contactId != null)
                 {
-                    await UpdateSearchContactHistoryAsync(contactId.Value, tags);
+                    await UpdateSearchContactHistoryTagsAsync(contactId.Value, tags);
                 }
 
                 return new NumberDetailModel
@@ -95,12 +88,45 @@ namespace ContactInfoApp.Server.Controllers
             }
         }
 
+        [HttpGet(nameof(Comments))]
+        public async Task<ActionResult<CommentsModel>> Comments(string phoneNumber, int? contactId = null)
+        {
+            try
+            {
+                var commentsInfo = await Api.GetCommentsAsync(phoneNumber);
+
+                var comments = commentsInfo.Response.Comments.Select(c => new CommentModel
+                {
+                    Author = c.Author,
+                    AuthorImage = c.AuthorImage,
+                    Body = c.Body,
+                    Liked = c.Liked,
+                    Disliked = c.Disliked,
+                    Date = c.Date
+                }).ToList();
+
+                if (contactId != null)
+                {
+                    await UpdateSearchContactHistoryCommentsAsync(contactId.Value, comments);
+                }
+
+                return new CommentsModel
+                {
+                    Comments = comments
+                };
+            }
+            catch (GetContactRequestException ex)
+            {
+                return StatusCode((int)ex.StatusCode, ex.ErrorInfo.Response);
+            }
+        }
+
         [HttpGet(nameof(VerifyCode))]
         public async Task<ActionResult> VerifyCode(string validationCode)
         {
             try
             {
-                await Api.SendValidationCodeAsync(validationCode, CancellationToken.None);
+                await Api.SendValidationCodeAsync(validationCode);
 
                 return Ok();
             }
@@ -110,21 +136,28 @@ namespace ContactInfoApp.Server.Controllers
             }
         }
 
-        private async Task<string> GetRequestCountryCodeAsync()
+        private async Task UpdateSearchContactHistoryCommentsAsync(int contactId, IEnumerable<CommentModel> comments)
         {
-            try
+            var contact = await DbContext.SearchContactHistory.FindAsync(contactId);
+
+            if (contact != null)
             {
-                var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-                var ipAddressDetails = await IpStackClient.GetIpAddressDetailsAsync(remoteIpAddress, "country_code");
-                return ipAddressDetails.CountryCode ?? GetContactSettings.CountryCode;
-            }
-            catch (Exception)
-            {
-                return GetContactSettings.CountryCode;
+                contact.Comments = comments.Select(c => new SearchContactHistoryComment
+                {
+                    Author = c.Author,
+                    AuthorImage = c.AuthorImage,
+                    Body = c.Body,
+                    Liked = c.Liked,
+                    Disliked = c.Disliked,
+                    Date = c.Date
+                }).ToList();
+
+                DbContext.Update(contact);
+                await DbContext.SaveChangesAsync();
             }
         }
 
-        private async Task UpdateSearchContactHistoryAsync(int contactId, IEnumerable<string> tags)
+        private async Task UpdateSearchContactHistoryTagsAsync(int contactId, IEnumerable<string> tags)
         {
             var jsonSerializerOptions = new JsonSerializerOptions
             {
@@ -133,10 +166,13 @@ namespace ContactInfoApp.Server.Controllers
 
             var contact = await DbContext.SearchContactHistory.FindAsync(contactId);
 
-            contact.Tags = JsonSerializer.Serialize(tags, jsonSerializerOptions);
+            if (contact != null)
+            {
+                contact.Tags = JsonSerializer.Serialize(tags, jsonSerializerOptions);
 
-            DbContext.Update(contact);
-            await DbContext.SaveChangesAsync();
+                DbContext.Update(contact);
+                await DbContext.SaveChangesAsync();
+            }
         }
 
         private async Task<int> AddSearchContactToHistoryAsync(ContactModel contact, string ipAddress)

@@ -20,5 +20,7 @@ namespace ContactInfoApp.Shared.Models
         public IEnumerable<string> Tags { get; set; }
 
         public int? TagCount { get; set; }
+
+        public bool HasComments { get; set; }
     }
 }

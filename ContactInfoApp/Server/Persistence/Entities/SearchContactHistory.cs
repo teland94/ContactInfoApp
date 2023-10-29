@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ContactInfoApp.Server.Persistence.Entities
 {
-    public class SearchContactHistory
+    public class SearchContactHistory : EntityBase
     {
-        public int Id { get; set; }
-
         public DateTime Date { get; set; }
 
         public string IpAddress { get; set; }
@@ -19,5 +18,7 @@ namespace ContactInfoApp.Server.Persistence.Entities
         public string Tags { get; set; }
 
         public int? TagCount { get; set; }
+
+        public List<SearchContactHistoryComment> Comments { get; set; }
     }
 }

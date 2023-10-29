@@ -1,0 +1,51 @@
+﻿@using ContactInfoApp.UI.ViewModels
+
+<RadzenDataList Data="@Comments" TItem="CommentViewModel" class="rz-datalist-sm">
+    <Template Context="comment">
+        <div class="container-fluid pr-0" style="font-size: 0.9rem">
+            <div class="row">
+                <div class="col-auto p-0">
+                    <RadzenImage Path="@comment.AuthorImage" Class="rounded-circle" Style="width: 32px; height: 32px;" />
+                </div>
+                <div class="col">
+                    <div class="row">
+                        <div class="col pl-2">
+                            <span class="font-weight-bold small">@comment.Author</span>
+                        </div>
+                        <div class="col-auto">
+                            <span class="text-secondary small">@comment.Date.ToString("dd MMMM yyyy")</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col pl-2">
+                            @comment.Body
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col pl-2">
+                            <hr />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col pl-2 d-flex justify-content-end">
+                            <div class="icon-item">
+                                <span class="icon-item"><RadzenIcon Icon="thumb_up"/></span>
+                                <span class="ml-1">@comment.Liked</span>
+                            </div>
+                            <div class="icon-item ml-2">
+                                <span class="icon-item"><RadzenIcon Icon="thumb_down"/></span>
+                                <span class="ml-1">@comment.Disliked</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Template>
+</RadzenDataList>
+
+
+@code {
+    [Parameter]
+    public IEnumerable<CommentViewModel> Comments { get; set; }
+}
