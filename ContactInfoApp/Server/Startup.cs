@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using ContactInfoApp.Server.Configuration;
 using ContactInfoApp.Server.Persistence;
 using GetContactAPI;
-using IpStack;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 
 namespace ContactInfoApp.Server
@@ -36,7 +35,6 @@ namespace ContactInfoApp.Server
             services.AddScoped<IComputerVisionClient>(s => new ComputerVisionClient(new ApiKeyServiceClientCredentials(
                 Configuration["ComputerVisionApi:Key"]
             )) { Endpoint = Configuration["ComputerVisionApi:Endpoint"] });
-            services.AddScoped(s => new IpStackClient(Configuration.GetValue<string>("IpStackApi:Key")));
 
             services.Configure<GetContactSettings>(Configuration.GetSection("GetContact"));
             services.Configure<UiSettings>(Configuration.GetSection("Ui"));

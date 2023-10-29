@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -76,10 +76,17 @@ namespace ContactInfoApp.Client.Pages
         private async Task Process()
         {
             var trimmedPhoneNumber = _phoneReplaceRegex.Replace(_phoneNumber, "");
+
+            _contact = null;
+            _tags = Enumerable.Empty<string>();
+            
             var contactId = await ProcessSearch(trimmedPhoneNumber);
-            if (contactId != null && !_contact.LimitedResult && _contact.TagCount > 0)
+            if (contactId != null)
             {
-                await ProcessNumberDetail(trimmedPhoneNumber);
+                if (_contact is { LimitedResult: false, TagCount: > 0 })
+                {
+                    await ProcessNumberDetail(trimmedPhoneNumber);
+                }
             }
         }
 
@@ -112,7 +119,7 @@ namespace ContactInfoApp.Client.Pages
                     var isVerifiedCode = await VerifyCode(errorResult.Image);
                     if (isVerifiedCode)
                     {
-                        await ProcessSearch(phoneNumber);
+                        return await ProcessSearch(phoneNumber);
                     }
                 }
 
